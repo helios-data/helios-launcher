@@ -1,4 +1,4 @@
-.PHONY: build deps run
+.PHONY: proto deps run
 
 # Variables
 PROTO_SOURCE_DIR=helios-protos
@@ -12,15 +12,21 @@ DOCKER_DISABLED=1
 export DOCKER_DISABLED
 
 # Commands
-build:
-	$(call MKDIR,$(PROTO_BUILD_DIR))
-
-	protoc -I=$(PROTO_SOURCE_DIR) --python_out=$(PROTO_BUILD_DIR) $(PROTO_SRC)
-
-	uv run src/build.py
+proto:
+	$(call build_protos)
 
 deps:
 	uv run sync
 
 run:
-	uv run src/launcher.py
+	ifeq ($(wildcard $(PROTO_BUILD_DIR)/.),)
+		$(error Protobuf build directory not found. Please run 'make proto')
+	else
+		uv run src/launcher.py
+	endif
+
+define build_protos
+	$(call MKDIR,$(PROTO_BUILD_DIR))
+
+	protoc -I=$(PROTO_SOURCE_DIR) --python_out=$(PROTO_BUILD_DIR) $(PROTO_SRC)
+endef
