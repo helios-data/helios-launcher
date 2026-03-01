@@ -12,8 +12,12 @@ DOCKER_DISABLED=1
 export DOCKER_DISABLED
 
 # Commands
-proto:
-	$(call build_protos)
+proto: $(PROTO_BUILD_DIR)
+	protoc -I=$(PROTO_SOURCE_DIR) --python_out=$(PROTO_BUILD_DIR) $(PROTO_SRC)
+
+# Create the directory if it doesn't exist
+$(PROTO_BUILD_DIR):
+	mkdir -p $(PROTO_BUILD_DIR)
 
 deps:
 	uv run sync
@@ -24,9 +28,3 @@ run:
 	else
 		uv run src/launcher.py
 	endif
-
-define build_protos
-	$(call MKDIR,$(PROTO_BUILD_DIR))
-
-	protoc -I=$(PROTO_SOURCE_DIR) --python_out=$(PROTO_BUILD_DIR) $(PROTO_SRC)
-endef
