@@ -50,7 +50,7 @@ class UserInterface:
     imgui.set_next_window_pos((sidebar_width, 0), imgui.Cond_.always)
     imgui.set_next_window_size((view_width - sidebar_width, view_height), imgui.Cond_.always)
   
-    imgui.begin("Preview", flags=SECTION_FLAGS)
+    imgui.begin("Right Sidebar", flags=SECTION_FLAGS)
     
     avail_x = imgui.get_content_region_avail().x
     logo_w = avail_x * 0.7
