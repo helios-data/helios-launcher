@@ -7,6 +7,10 @@ class TreeNode:
     self.id = node_id
     self.children = children or []
     self.is_visible = True
+    self.location = None
+    self.hash = None
+    self.type = None # github vs. local
+    self.image_exists = None # None, False, True
 
 class TreeUtils:
   def __init__(self):
