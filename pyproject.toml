@@ -7,9 +7,6 @@ requires-python = ">=3.12"
 dependencies = [
     "docker>=7.1.0",
     "gitpython>=3.1.46",
-    "glfw>=2.10.0",
-    "imgui[glfw]>=2.0.0",
-    "numpy>=2.4.2",
+    "imgui-bundle>=1.92.600",
     "protobuf>=7.34.0",
-    "pyopengl>=3.1.10",
 ]
