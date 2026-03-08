@@ -1,11 +1,5 @@
 import docker
-import os
-import sys
 
-# Prune leftover stopped containers from build step
-os.environ["DOCKER_BUILDKIT"] = "1"
-
-LOCAL = os.path.dirname(sys.executable)
 REMOVE_BUILD_INTERMEDIATES = True # Set to False for debugging build issues, True for production use to save space
 
 class DockerUtils:
