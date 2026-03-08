@@ -5,7 +5,7 @@ PROTO_SOURCE_DIR=helios-protos
 PROTO_BUILD_DIR=generated
 
 # Find all .proto files in the proto directory and subdirectories
-PROTO_SRC := $(wildcard $(PROTO_SOURCE_DIR)/**/*.proto)
+PROTO_SRC := $(shell find $(PROTO_SOURCE_DIR) -name "*.proto")
 
 # 1=true, 0=false
 DOCKER_DISABLED=1
@@ -23,8 +23,9 @@ deps:
 	uv run sync
 
 run:
-	ifeq ($(wildcard $(PROTO_BUILD_DIR)/.),)
-		$(error Protobuf build directory not found. Please run 'make proto')
-	else
-		uv run src/main.py
-	endif
+	@if [ ! -d "$(PROTO_BUILD_DIR)" ]; then \
+		echo "Protobuf build directory not found. Please run 'make proto'"; \
+		exit 1; \
+	fi
+
+	uv run src/main.py
