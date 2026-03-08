@@ -10,6 +10,8 @@ class TreeComponent:
   def __init__(self, initial_data: TreeNode) -> None:
     self.data = initial_data
 
+    self.edit_node = None # Track which node is being edited for showing the input field
+
   """
   Main render function for the tree component, sets up the table and calls the recursive rendering function.
   """
@@ -54,7 +56,7 @@ class TreeComponent:
     imgui.push_id(node.id)
     
     if imgui.small_button("Edit"):
-      print(f"Clicked Edit on: {node.name}")
+      self.edit_node = node
 
     imgui.pop_id()
     

@@ -28,4 +28,4 @@ run:
 		exit 1; \
 	fi
 
-	uv run src/main.py
+	PYTHONPATH=. uv run src/main.py

@@ -83,6 +83,10 @@ class UserInterface:
     imgui.set_next_window_size((sidebar_width, view_height), imgui.Cond_.always)
     imgui.begin("Hierarchy", flags=SECTION_FLAGS)
     
+    # Determine Footer State
+    editing_node = self.tree_component.edit_node
+    footer_height = 200.0 if editing_node else 0.0 # Only reserve space if editing
+    
     imgui.text_disabled("PROJECT OVERVIEW")
     imgui.separator()
 
@@ -95,5 +99,31 @@ class UserInterface:
     imgui.separator()
     imgui.spacing()
     self.tree_component.render()
+
+    if editing_node:
+      imgui.set_cursor_pos_y(imgui.get_window_height() - footer_height) # Pin to bottom
+      
+      # Start a child region for the Editor to give it a distinct feel
+      imgui.begin_child("EditPanel", (0, footer_height))
+      
+      imgui.text_colored((0.3, 0.7, 1.0, 1.0), f"EDITING: {editing_node.name}")
+      imgui.spacing()
+      imgui.separator()
+      imgui.spacing()
+
+      # Input fields for TreeNode attributes
+      # Note: imgui.input_text returns (modified, new_value)
+      changed, new_name = imgui.input_text("Name", editing_node.name, 128)
+      if changed:
+        editing_node.name = new_name
+          
+      changed_id, new_id = imgui.input_text("ID", editing_node.id, 64)
+      if changed_id:
+        editing_node.id = new_id
+
+      if imgui.button("Close Editor", (-1, 0)):
+        self.tree_component.edit_node = None
+          
+      imgui.end_child()
 
     imgui.end()
