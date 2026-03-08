@@ -7,7 +7,7 @@ class GithubUtils:
     try:
       print(f"Cloning into {target_dir}...")
       repo = git.Repo.clone_from(repo_url, target_dir)
-      return repo.head.commit.hexsha
+      return repo.head.object.hexsha
     except Exception as e:
       print(f"Error during clone: {e}")
       return None
