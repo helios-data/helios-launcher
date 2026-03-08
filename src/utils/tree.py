@@ -8,14 +8,13 @@ ROOT = os.path.dirname(sys.executable)
 TREE_FILE_NAME = "component_tree.json"
 
 class TreeNode:
-  def __init__(self, name, node_id, children=None):
+  def __init__(self, name, node_id, children=None, location=None, hash=None, type=None):
     self.name = name
     self.id = node_id
     self.children = children or []
-    self.is_visible = True
-    self.location = None
-    self.hash = None
-    self.type = None # github vs. local
+    self.location = location
+    self.hash = hash
+    self.type = type # github vs. local
     self.image_exists = None # None, False, True
 
 class TreeUtils:
