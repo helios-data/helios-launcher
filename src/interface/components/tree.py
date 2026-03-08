@@ -15,8 +15,8 @@ class TreeComponent:
   """
   Main render function for the tree component, sets up the table and calls the recursive rendering function.
   """
-  def render(self):
-    if imgui.begin_child("TreeRegion", (0, 300)):
+  def render(self, height: float = 300):
+    if imgui.begin_child("TreeRegion", (0, height)):
       if imgui.begin_table("TreeTable", 2, TABLE_FLAGS):
         imgui.table_setup_column("Name", imgui.TableColumnFlags_.width_stretch)
         imgui.table_setup_column("Actions", imgui.TableColumnFlags_.width_fixed, 100.0)

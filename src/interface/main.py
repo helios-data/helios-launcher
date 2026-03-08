@@ -5,7 +5,7 @@ User Interface for Project Helios using ImGui.
 import os
 from imgui_bundle import imgui, immapp, hello_imgui
 from utils import TreeNode
-from .components import TreeComponent
+from .components import TreeComponent, EditorComponent
 
 WINDOW_NAME = "Project Helios Launcher"
 DEFAULT_WINDOW_SIZE = (1000, 600)
@@ -31,6 +31,7 @@ class UserInterface:
   def __init__(self, initial_data: TreeNode):
     self.initial_data = initial_data
     self.tree_component = TreeComponent(self.initial_data)
+    self.editor_component = EditorComponent()
 
     immapp.run(self.gui, window_title=WINDOW_NAME, window_size=DEFAULT_WINDOW_SIZE)
 
@@ -98,32 +99,11 @@ class UserInterface:
     imgui.text_disabled("HIERARCHY TREE")
     imgui.separator()
     imgui.spacing()
-    self.tree_component.render()
+    self.tree_component.render(-footer_height)
 
     if editing_node:
-      imgui.set_cursor_pos_y(imgui.get_window_height() - footer_height) # Pin to bottom
-      
-      # Start a child region for the Editor to give it a distinct feel
-      imgui.begin_child("EditPanel", (0, footer_height))
-      
-      imgui.text_colored((0.3, 0.7, 1.0, 1.0), f"EDITING: {editing_node.name}")
-      imgui.spacing()
-      imgui.separator()
-      imgui.spacing()
+      self.editor_component.render(editing_node, height=footer_height)
 
-      # Input fields for TreeNode attributes
-      # Note: imgui.input_text returns (modified, new_value)
-      changed, new_name = imgui.input_text("Name", editing_node.name, 128)
-      if changed:
-        editing_node.name = new_name
-          
-      changed_id, new_id = imgui.input_text("ID", editing_node.id, 64)
-      if changed_id:
-        editing_node.id = new_id
-
-      if imgui.button("Close Editor", (-1, 0)):
-        self.tree_component.edit_node = None
-          
-      imgui.end_child()
+      # TODO: Have a callback function to close the editor and save the data
 
     imgui.end()
