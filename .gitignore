@@ -3,4 +3,4 @@ generated/
 __pycache__/
 
 .python-version
-imgui.ini
+*.ini

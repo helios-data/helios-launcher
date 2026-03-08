@@ -26,5 +26,5 @@ run:
 	ifeq ($(wildcard $(PROTO_BUILD_DIR)/.),)
 		$(error Protobuf build directory not found. Please run 'make proto')
 	else
-		uv run src/launcher.py
+		uv run src/main.py
 	endif
