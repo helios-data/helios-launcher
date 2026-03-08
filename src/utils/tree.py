@@ -1,31 +1,41 @@
-from google.protobuf import json_format
-import generated.config.component_pb2 as component
+# from google.protobuf import json_format
+# import generated.config.component_pb2 as component
+
+class TreeNode:
+  def __init__(self, name, node_id, children=None):
+    self.name = name
+    self.id = node_id
+    self.children = children or []
+    self.is_visible = True
 
 class TreeUtils:
-  def generate_component_tree(self) -> tuple[component.ComponentTree, Path]:
-  # Example of generating a component tree using protobuf
-  tree_location = Path("./component_tree.json")
+  def __init__(self):
+    pass
 
-  leaf_component = component.BaseComponent()
-  leaf_component.name = "RocketDecoder"
-  leaf = component.Component()
-  leaf.path = "/components/rocketdecoder"
-  leaf.tag = "rocketdecoder:v1.0.0"
-  leaf.id = "RD1"
-  leaf_component.leaf.CopyFrom(leaf)
+  # def generate_component_tree(self) -> tuple[component.ComponentTree, Path]:
+  # # Example of generating a component tree using protobuf
+  # tree_location = Path("./component_tree.json")
 
-  branch_component = component.ComponentGroup()
-  branch_component.children.extend([leaf_component])
+  # leaf_component = component.BaseComponent()
+  # leaf_component.name = "RocketDecoder"
+  # leaf = component.Component()
+  # leaf.path = "/components/rocketdecoder"
+  # leaf.tag = "rocketdecoder:v1.0.0"
+  # leaf.id = "RD1"
+  # leaf_component.leaf.CopyFrom(leaf)
 
-  root = component.BaseComponent()
-  root.name = "FALCON"
-  root.branch.CopyFrom(branch_component)
+  # branch_component = component.ComponentGroup()
+  # branch_component.children.extend([leaf_component])
 
-  component_tree = component.ComponentTree()
-  component_tree.root.CopyFrom(root)
-  component_tree.version = "1.0.0"
+  # root = component.BaseComponent()
+  # root.name = "FALCON"
+  # root.branch.CopyFrom(branch_component)
 
-  with open(tree_location, "w") as f:
-    f.write(json_format.MessageToJson(component_tree))
+  # component_tree = component.ComponentTree()
+  # component_tree.root.CopyFrom(root)
+  # component_tree.version = "1.0.0"
 
-  return component_tree, tree_location
+  # with open(tree_location, "w") as f:
+  #   f.write(json_format.MessageToJson(component_tree))
+
+  # return component_tree, tree_location
