@@ -44,7 +44,7 @@ class TreeComponent:
       draw_list.add_line((line_x, line_y_mid), (cursor_pos.x - 2, line_y_mid), line_color, 1.0)
       draw_list.add_line((line_x, cursor_pos.y - style.item_spacing.y), (line_x, line_y_mid), line_color, 1.0)
 
-    flags = imgui.TreeNodeFlags_.span_full_width | imgui.TreeNodeFlags_.open_on_arrow
+    flags = imgui.TreeNodeFlags_.span_full_width | imgui.TreeNodeFlags_.open_on_arrow | imgui.TreeNodeFlags_.default_open
     if not node.children:
       flags |= imgui.TreeNodeFlags_.leaf
     
@@ -55,12 +55,7 @@ class TreeComponent:
     
     if imgui.small_button("Edit"):
       print(f"Clicked Edit on: {node.name}")
-      
-    imgui.same_line()
-    
-    if imgui.small_button("+"):
-      print(f"Clicked Add on: {node.name}")
-        
+
     imgui.pop_id()
     
     if opened:
