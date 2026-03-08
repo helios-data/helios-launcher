@@ -1,4 +1,6 @@
 .venv/
 generated/
+__pycache__/
 
 .python-version
+*.ini

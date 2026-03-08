@@ -7,7 +7,7 @@ import threading
 from pathlib import Path
 
 from google.protobuf import json_format
-import generated.python.config.component_pb2 as component
+import generated.config.component_pb2 as component
 
 # Prune leftover stopped containers from build step
 os.environ["DOCKER_BUILDKIT"] = "1"
@@ -109,7 +109,7 @@ def build_images(client: docker.DockerClient, images: dict[str, tuple[str, str]]
       thread = threading.Thread(target=_build_image, args=(client, build_context_path, image_tag))
       thread.start()
 
-      build_threads.append(thread)
+      build_threads.append(thread)  
 
   except docker.errors.BuildError as e:
     print(f"Error building image: {e}")
