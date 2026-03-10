@@ -4,11 +4,15 @@ User Interface for Project Helios using ImGui.
 
 import os
 from imgui_bundle import imgui, immapp, hello_imgui
-from utils import TreeNode
-from .components import TreeComponent, EditorComponent
+from utils import TreeNode, TreeUtils
+from .components import TreeComponent, EditorComponent, QuickActions
 
 WINDOW_NAME = "Project Helios Launcher"
 DEFAULT_WINDOW_SIZE = (1000, 600)
+
+LEFT_SIDE_WIDTH_RATIO = 0.30 # % of total width for the left sidebar
+LEFT_FOOTER_HEIGHT = 200.0 # pixels
+LOGO_WIDTH_RATIO = 0.7 # % of available width in the right sidebar for the logo
 
 # Set assets folder for hello_imgui to load images
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -29,9 +33,13 @@ class UserInterface:
   ImGui-based UI for displaying a hierarchical tree structure configuration.
   """
   def __init__(self, initial_data: TreeNode):
-    self.initial_data = initial_data
-    self.tree_component = TreeComponent(self.initial_data)
+    self.data = initial_data
+
+    self.tree_utils = TreeUtils()
+
+    self.tree_component = TreeComponent(self.data)
     self.editor_component = EditorComponent()
+    self.quick_actions = QuickActions()
 
     immapp.run(self.gui, window_title=WINDOW_NAME, window_size=DEFAULT_WINDOW_SIZE)
 
@@ -43,18 +51,18 @@ class UserInterface:
     viewport = imgui.get_main_viewport()
     view_width = viewport.work_size.x
     view_height = viewport.work_size.y
-    sidebar_width = view_width * 0.35
+    sidebar_width = view_width * LEFT_SIDE_WIDTH_RATIO
 
+    # Styling for the right sidebar
     imgui.push_style_color(imgui.Col_.window_bg, (0.96, 0.96, 0.97, 1.0)) # Off-white
     imgui.push_style_color(imgui.Col_.text, (0.1, 0.1, 0.1, 1.0)) # Dark text for white bg
-    
     imgui.set_next_window_pos((sidebar_width, 0), imgui.Cond_.always)
     imgui.set_next_window_size((view_width - sidebar_width, view_height), imgui.Cond_.always)
   
     imgui.begin("Right Sidebar", flags=SECTION_FLAGS)
     
     avail_x = imgui.get_content_region_avail().x
-    logo_w = avail_x * 0.7
+    logo_w = avail_x * LOGO_WIDTH_RATIO
     imgui.set_cursor_pos_x((avail_x - logo_w) * 0.5)
     hello_imgui.image_from_asset("helios.png", (logo_w, 0))
 
@@ -62,31 +70,24 @@ class UserInterface:
     imgui.separator()
     imgui.spacing()
 
-    # Action Grid
-    imgui.text_disabled("QUICK ACTIONS")
-    if imgui.begin_table("Actions", 2):
-      imgui.table_next_row()
-      imgui.table_next_column()
-      if imgui.button("Add Component", (-1, 40)): pass
-      imgui.table_next_column()
-      if imgui.button("Configurations", (-1, 40)): pass
-      imgui.table_next_row()
-      imgui.table_next_column()
-      if imgui.button("Global Settings", (-1, 40)): pass
-      imgui.table_next_column()
-      if imgui.button("Launch System", (-1, 40)): pass
-      imgui.end_table()
+    self.quick_actions.render()
+
+    imgui.set_cursor_pos_y(imgui.get_window_height() - 60)
+    launch = imgui.button("Launch Helios", (avail_x, 40))
+    if launch:
+      self.launch_helios()
 
     imgui.end()
     imgui.pop_style_color(2)
 
+    # Styling for left sidebar
     imgui.set_next_window_pos((0, 0), imgui.Cond_.always)
     imgui.set_next_window_size((sidebar_width, view_height), imgui.Cond_.always)
     imgui.begin("Hierarchy", flags=SECTION_FLAGS)
     
     # Determine Footer State
     editing_node = self.tree_component.edit_node
-    footer_height = 200.0 if editing_node else 0.0 # Only reserve space if editing
+    footer_height = LEFT_FOOTER_HEIGHT if editing_node else 0.0 # Only reserve space if editing
     
     imgui.text_disabled("PROJECT OVERVIEW")
     imgui.separator()
@@ -102,8 +103,19 @@ class UserInterface:
     self.tree_component.render(-footer_height)
 
     if editing_node:
-      self.editor_component.render(editing_node, height=footer_height)
-
-      # TODO: Have a callback function to close the editor and save the data
+      self.editor_component.render(editing_node, height=footer_height, on_close_callback=self.close_editting_node)
 
     imgui.end()
+
+  def close_editting_node(self):
+    self.tree_component.clear_editting_mode()
+
+  def launch_helios(self):
+
+    #TODO Check if eack node has a docker image built first
+    # Check whenever the thing is updated, and update an icon
+    
+
+    print("Generating component tree from protobufs and configuration...")
+    path = self.tree_utils.generate_component_tree(self.data)
+    print(f"Component tree generated at: {path}")

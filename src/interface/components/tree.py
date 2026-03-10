@@ -77,3 +77,6 @@ class TreeComponent:
         )
             
       imgui.tree_pop()
+
+  def clear_editting_mode(self):
+    self.edit_node = None
