@@ -1,14 +1,18 @@
 import os
 import sys
+
 from pathlib import Path
 from google.protobuf import json_format
 import generated.config.component_pb2 as component
 
-ROOT = os.path.dirname(sys.executable)
+from config.settings import *
+
 TREE_FILE_NAME = "component_tree.json"
 
+NODE_TYPES = ["None", "GitHub", "Local"]
+
 class TreeNode:
-  def __init__(self, name, node_id, children=None, location=None, hash=None, type=None):
+  def __init__(self, name, node_id, children=None, location: str = "", hash: str = "", type: int = 0):
     self.name = name
     self.id = node_id
     self.children = children or []
@@ -22,7 +26,7 @@ class TreeUtils:
     pass
 
   def generate_component_tree(self, root_node: TreeNode) -> Path:
-    tree_location = Path(ROOT) / TREE_FILE_NAME
+    tree_location = Path(ROOT) / TEMP_FOLDER / TREE_FILE_NAME
 
     def build_proto_node(node: TreeNode) -> component.BaseComponent:
       base = component.BaseComponent()
