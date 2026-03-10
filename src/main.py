@@ -1,7 +1,7 @@
-import sys
 import os
 from utils import TreeNode
 from interface import UserInterface
+from config.settings import *
 
 # Mock data
 root_data = TreeNode("Helios", "root", [
@@ -15,7 +15,7 @@ root_data = TreeNode("Helios", "root", [
 # Prune leftover stopped containers from build step
 os.environ["DOCKER_BUILDKIT"] = "1"
 
-LOCAL = os.path.dirname(sys.executable)
+os.makedirs(ROOT / TEMP_FOLDER, exist_ok=True)
 
 if __name__ == "__main__":
   UserInterface(root_data)

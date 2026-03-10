@@ -1,6 +1,7 @@
 .venv/
 generated/
 __pycache__/
+tmp/
 
 .python-version
 *.ini
