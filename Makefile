@@ -2,7 +2,7 @@
 
 # Variables
 PROTO_SOURCE_DIR=helios-protos
-PROTO_BUILD_DIR=generated
+PROTO_BUILD_DIR=src/generated
 
 # Find all .proto files in the proto directory and subdirectories
 PROTO_SRC := $(shell find $(PROTO_SOURCE_DIR) -name "*.proto")
@@ -28,4 +28,4 @@ run:
 		exit 1; \
 	fi
 
-	PYTHONPATH=. uv run src/main.py
+	uv run src/main.py
