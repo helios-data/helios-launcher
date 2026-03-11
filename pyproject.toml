@@ -9,4 +9,5 @@ dependencies = [
     "gitpython>=3.1.46",
     "imgui-bundle>=1.92.600",
     "protobuf>=7.34.0",
+    "pyserial>=3.5",
 ]

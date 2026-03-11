@@ -20,6 +20,8 @@ class TreeNode:
     self.hash = hash
     self.type = type # github vs. local
     self.image_exists = None # None, False, True
+    self.volumes = []
+    self.ports = []
 
 class TreeUtils:
   def __init__(self):

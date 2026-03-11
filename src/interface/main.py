@@ -6,12 +6,13 @@ import os
 from imgui_bundle import imgui, immapp, hello_imgui
 from utils import TreeNode, TreeUtils
 from .components import TreeComponent, EditorComponent, QuickActions
+import serial.tools.list_ports
 
 WINDOW_NAME = "Project Helios Launcher"
 DEFAULT_WINDOW_SIZE = (1000, 600)
 
 LEFT_SIDE_WIDTH_RATIO = 0.30 # % of total width for the left sidebar
-LEFT_FOOTER_HEIGHT = 200.0 # pixels
+LEFT_FOOTER_HEIGHT = 300.0 # pixels
 LOGO_WIDTH_RATIO = 0.7 # % of available width in the right sidebar for the logo
 
 # Set assets folder for hello_imgui to load images
@@ -103,12 +104,16 @@ class UserInterface:
     self.tree_component.render(-footer_height)
 
     if editing_node:
-      self.editor_component.render(editing_node, height=footer_height, on_close_callback=self.close_editting_node)
+      self.editor_component.render(editing_node, height=footer_height, on_close_callback=self.close_editting_node, ports=self.get_ports_list())
 
     imgui.end()
 
   def close_editting_node(self):
     self.tree_component.clear_editting_mode()
+
+  def get_ports_list(self):
+    ports = serial.tools.list_ports.comports()
+    return [f"{p.device} - {p.description}" for p in ports]
 
   def launch_helios(self):
 
