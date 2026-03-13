@@ -2,9 +2,12 @@ import git
 from pathlib import Path
 
 class GithubUtils:
+  def __init__(self):
+    pass
     
-  def clone_repo(self, target_dir: Path, repo_url: str) -> str | None:
+  def clone_repo(self, target_dir: Path, repo_url: str, hash: str) -> str | None:
     try:
+      #TODO: Add hash based cloning
       print(f"Cloning into {target_dir}...")
       repo = git.Repo.clone_from(repo_url, target_dir)
       return repo.head.object.hexsha
