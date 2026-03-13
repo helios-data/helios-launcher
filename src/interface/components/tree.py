@@ -7,8 +7,8 @@ TABLE_FLAGS = (imgui.TableFlags_.row_bg |
 
 class TreeComponent:
 
-  def __init__(self, initial_data: TreeNode) -> None:
-    self.data = initial_data
+  def __init__(self, interface) -> None:
+    self.interface = interface
 
     self.edit_node = None # Track which node is being edited for showing the input field
 
@@ -20,7 +20,7 @@ class TreeComponent:
       if imgui.begin_table("TreeTable", 2, TABLE_FLAGS):
         imgui.table_setup_column("Name", imgui.TableColumnFlags_.width_stretch)
         imgui.table_setup_column("Actions", imgui.TableColumnFlags_.width_fixed, 100.0)
-        self.render_tree_recursive(self.data)
+        self.render_tree_recursive(self.interface.data)
         imgui.end_table()
     imgui.end_child()
 
