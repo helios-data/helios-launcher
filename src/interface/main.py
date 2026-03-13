@@ -38,9 +38,9 @@ class UserInterface:
 
     self.tree_utils = TreeUtils()
 
-    self.tree_component = TreeComponent(self.data)
+    self.tree_component = TreeComponent(self)
     self.editor_component = EditorComponent()
-    self.quick_actions = QuickActions()
+    self.quick_actions = QuickActions(self)
 
     immapp.run(self.gui, window_title=WINDOW_NAME, window_size=DEFAULT_WINDOW_SIZE)
 

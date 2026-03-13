@@ -4,15 +4,14 @@ import sys
 from pathlib import Path
 from google.protobuf import json_format
 import generated.config.component_pb2 as component
+import json
 
 from config.settings import *
 
 TREE_FILE_NAME = "component_tree.json"
 
-NODE_TYPES = ["None", "GitHub", "Local"]
-
 class TreeNode:
-  def __init__(self, name, node_id, children=None, location: str = "", hash: str = "", type: int = 0):
+  def __init__(self, name, node_id, children=None, location: str = "", hash: str = "", type: Node_Type = Node_Type['NONE']):
     self.name = name
     self.id = node_id
     self.children = children or []
@@ -22,6 +21,19 @@ class TreeNode:
     self.image_exists = None # None, False, True
     self.volumes = []
     self.ports = []
+
+  def to_dict(self):
+    return {
+      "name": self.name,
+      "id": self.id,
+      "location": self.location,
+      "hash": self.hash,
+      "type": self.type,
+      "image_exists": self.image_exists,
+      "volumes": self.volumes,
+      "ports": self.ports,
+      "children": [child.to_dict() for child in self.children]
+    }
 
 class TreeUtils:
   def __init__(self):
@@ -61,3 +73,46 @@ class TreeUtils:
       f.write(json_string)
 
     return tree_location
+
+  def save_tree_as_dict(self, root: TreeNode, file_name: str = "configuration.json"):
+    with open(ROOT / TEMP_FOLDER / file_name, "w") as f:
+      data = root.to_dict()
+      json.dump(data, f, indent=2)
+    
+    pass
+
+  def load_tree_from_dict(self, file_name: str = "configuration.json") -> TreeNode:
+    file_path = Path(ROOT) / TEMP_FOLDER / file_name
+        
+    if not file_path.exists():
+      raise FileNotFoundError(f"No tree configuration found at {file_path}")
+
+    with open(file_path, "r") as f:
+      data = json.load(f)
+    
+    return self._dict_to_node(data)
+
+  def _dict_to_node(self, data: dict) -> TreeNode:
+    """Recursively converts a dictionary back into a TreeNode object."""
+    children_data = data.pop("children", [])
+    
+    image_exists = data.pop("image_exists", None)
+    volumes = data.pop("volumes", [])
+    ports = data.pop("ports", [])
+
+    node = TreeNode(
+      name=data.get("name"),
+      node_id=data.get("id"),
+      location=data.get("location", ""),
+      hash=data.get("hash", ""),
+      type=data.get("type", 0)
+    )
+
+    node.image_exists = image_exists
+    node.volumes = volumes
+    node.ports = ports
+
+    for child_dict in children_data:
+      node.children.append(self._dict_to_node(child_dict))
+
+    return node
