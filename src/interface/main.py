@@ -127,7 +127,20 @@ class UserInterface:
     print(f"Component tree generated at: {path}")
 
   def scan_docker_images(self):
-    pass
+    """ Check if the docker image exists for all nodes starting at the root """
+    self._scan_node_image_exists(self.data)
+
+  def _scan_node_image_exists(self, node: TreeNode) -> None:
+    """ If the current node is a leaf, check the image, if not, check its children """
+    if node.children == []:
+      node.image_exists = self.docker_utils.check_image_exists(node)
+    else:
+      for child in node.children:
+        self._scan_node_image_exists(child)
 
   def build_missing_docker_images(self):
+    """ 
+    Build the docker images for all nodes with image_exists = False 
+    Does not build for those with image_exists = None. Run scan_docker_images() first
+    """
     pass

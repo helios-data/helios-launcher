@@ -12,15 +12,15 @@ TREE_FILE_NAME = "component_tree.json"
 
 class TreeNode:
   def __init__(self, name, node_id, children=None, location: str = "", hash: str = "", type: Node_Type = Node_Type['NONE'], volumes: list = [], ports: list = []):
-    self.name = name
-    self.id = node_id
-    self.children = children or []
-    self.location = location
-    self.hash = hash
-    self.type = type # github vs. local
-    self.image_exists = None # None, False, True
-    self.volumes = []
-    self.ports = []
+    self.name: str = name
+    self.id: str = node_id
+    self.children: list = children or []
+    self.location: str = location
+    self.hash: str = hash
+    self.type: Node_Type = type
+    self.image_exists: bool | None = None # None, False, True
+    self.volumes: list = []
+    self.ports: list = []
 
   def to_dict(self):
     return {
