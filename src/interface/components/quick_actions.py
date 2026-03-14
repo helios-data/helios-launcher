@@ -14,10 +14,10 @@ class QuickActions:
       if imgui.button("Global Settings", (-1, 40)): pass
       imgui.table_next_row()
       imgui.table_next_column()
-      if imgui.button("Scan Existing Docker Images", (-1, 40)): pass
+      if imgui.button("Scan Existing Docker Images", (-1, 40)):
         self.interface.scan_docker_images()
       imgui.table_next_column()
-      if imgui.button("Build Missing Docker Images", (-1, 40)): pass
+      if imgui.button("Build Missing Docker Images", (-1, 40)):
         self.interface.build_missing_docker_images()
       imgui.table_next_row()
       imgui.table_next_column()

@@ -4,7 +4,7 @@ User Interface for Project Helios using ImGui.
 
 import os
 from imgui_bundle import imgui, immapp, hello_imgui
-from utils import TreeNode, TreeUtils
+from utils import TreeNode, TreeUtils, DockerUtils
 from .components import TreeComponent, EditorComponent, QuickActions
 import serial.tools.list_ports
 
@@ -37,6 +37,7 @@ class UserInterface:
     self.data = initial_data
 
     self.tree_utils = TreeUtils()
+    self.docker_utils = DockerUtils()
 
     self.tree_component = TreeComponent(self)
     self.editor_component = EditorComponent()
@@ -124,3 +125,9 @@ class UserInterface:
     print("Generating component tree from protobufs and configuration...")
     path = self.tree_utils.generate_component_tree(self.data)
     print(f"Component tree generated at: {path}")
+
+  def scan_docker_images(self):
+    pass
+
+  def build_missing_docker_images(self):
+    pass
