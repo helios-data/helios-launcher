@@ -28,7 +28,7 @@ class TreeNode:
       "id": self.id,
       "location": self.location,
       "hash": self.hash,
-      "type": self.type,
+      "type": self.type.value,
       "image_exists": self.image_exists,
       "volumes": self.volumes,
       "ports": self.ports,
@@ -103,7 +103,7 @@ class TreeUtils:
       node_id=data.get("id"),
       location=data.get("location", ""),
       hash=data.get("hash", ""),
-      type=data.get("type", 0),
+      type=Node_Type(data.get("type", 0)),
       volumes=data.pop("volumes", []),
       ports=data.pop("ports", [])
     )
