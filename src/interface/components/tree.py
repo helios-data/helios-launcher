@@ -1,5 +1,5 @@
 from utils import TreeNode
-from imgui_bundle import imgui
+from imgui_bundle import imgui, icons_fontawesome_6
 
 TABLE_FLAGS = (imgui.TableFlags_.row_bg | 
                 imgui.TableFlags_.no_borders_in_body | 
@@ -72,7 +72,7 @@ class TreeComponent:
       elif exists is False:
         icon, color, tooltip = ICON_NOT_BUILT, COLOR_NOT_BUILT, "Image not found"
       else:
-        icon, color, tooltip = "○", COLOR_UNKNOWN, "Image status unknown"
+        icon, color, tooltip = ICON_NOT_BUILT, COLOR_UNKNOWN, "Image status unknown"
 
       imgui.text_colored(color, icon)
       if imgui.is_item_hovered():

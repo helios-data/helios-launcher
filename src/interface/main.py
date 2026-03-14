@@ -43,7 +43,15 @@ class UserInterface:
     self.editor_component = EditorComponent()
     self.quick_actions = QuickActions(self)
 
-    immapp.run(self.gui, window_title=WINDOW_NAME, window_size=DEFAULT_WINDOW_SIZE)
+    runner_params = hello_imgui.RunnerParams()
+    runner_params.callbacks.show_gui = self.gui
+    runner_params.app_window_params.window_title = WINDOW_NAME
+    runner_params.app_window_params.window_geometry.size = DEFAULT_WINDOW_SIZE
+
+    # Load default font and add the font_awesome icons
+    runner_params.callbacks.default_icon_font = hello_imgui.DefaultIconFont.font_awesome6
+
+    immapp.run(runner_params=runner_params)
 
   """
   Renders the main user interface.

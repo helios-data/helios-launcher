@@ -65,6 +65,7 @@ class EditorComponent:
         imgui.text("Port Bindings")
         for i, port in enumerate(node.ports):
           # Use unique IDs for each combo in a loop
+          imgui.set_next_item_width(imgui.get_content_region_avail().x - 125)
           changed, new_port = imgui.combo(f"Port ##{i}", ports.index(port) if port in ports else 0, ports)
           if changed:
             node.ports[i] = ports[new_port]
@@ -82,7 +83,7 @@ class EditorComponent:
         # --- VOLUMES SECTION (List with Folder Picker) ---
         imgui.text("Volume Mounts")
         for i, vol in enumerate(node.volumes):
-          imgui.set_next_item_width(imgui.get_content_region_avail().x - 100)
+          imgui.set_next_item_width(imgui.get_content_region_avail().x - 160)
           changed, new_vol = imgui.input_text(f"##vol{i}", vol, 256)
           if changed:
             node.volumes[i] = new_vol
