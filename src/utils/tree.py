@@ -11,16 +11,16 @@ from config.settings import *
 TREE_FILE_NAME = "component_tree.json"
 
 class TreeNode:
-  def __init__(self, name, node_id, children=None, location: str = "", hash: str = "", type: Node_Type = Node_Type['NONE']):
-    self.name = name
-    self.id = node_id
-    self.children = children or []
-    self.location = location
-    self.hash = hash
-    self.type = type # github vs. local
-    self.image_exists = None # None, False, True
-    self.volumes = []
-    self.ports = []
+  def __init__(self, name, node_id, children=None, location: str = "", hash: str = "", type: Node_Type = Node_Type['NONE'], volumes: list = [], ports: list = []):
+    self.name: str = name
+    self.id: str = node_id
+    self.children: list = children or []
+    self.location: str = location
+    self.hash: str = hash
+    self.type: Node_Type = type
+    self.image_exists: bool | None = None # None, False, True
+    self.volumes: list = []
+    self.ports: list = []
 
   def to_dict(self):
     return {
@@ -28,7 +28,7 @@ class TreeNode:
       "id": self.id,
       "location": self.location,
       "hash": self.hash,
-      "type": self.type,
+      "type": self.type.value,
       "image_exists": self.image_exists,
       "volumes": self.volumes,
       "ports": self.ports,
@@ -97,20 +97,18 @@ class TreeUtils:
     children_data = data.pop("children", [])
     
     image_exists = data.pop("image_exists", None)
-    volumes = data.pop("volumes", [])
-    ports = data.pop("ports", [])
 
     node = TreeNode(
       name=data.get("name"),
       node_id=data.get("id"),
       location=data.get("location", ""),
       hash=data.get("hash", ""),
-      type=data.get("type", 0)
+      type=Node_Type(data.get("type", 0)),
+      volumes=data.pop("volumes", []),
+      ports=data.pop("ports", [])
     )
 
     node.image_exists = image_exists
-    node.volumes = volumes
-    node.ports = ports
 
     for child_dict in children_data:
       node.children.append(self._dict_to_node(child_dict))

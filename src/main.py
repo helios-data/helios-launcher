@@ -5,13 +5,13 @@ from config.settings import *
 
 # Mock data
 root_data = TreeNode("Helios", "root", [
-    TreeNode("HeliosCore", "3", location="https://github.com/helios-data/helios-core", type=Node_Type['GITHUB']),
-    TreeNode("FALCON", "1", [
-        TreeNode("Telemetry", "2", location="https://github.com/UBC-Rocket/ground-station", type=Node_Type['GITHUB']),
-    ]),
-    TreeNode("Services", "6", [
-      TreeNode("Livestreaming", "7", location="https://github.com/helios-data/helios-livestreaming", type=Node_Type['GITHUB'])
-    ]),
+    TreeNode("HeliosCore", "3", location="https://github.com/helios-data/helios-core", type=Node_Type['GITHUB'], hash="84e7aad25fccd25d4b0e13a7d559550722f34fb2"),
+    # TreeNode("FALCON", "1", [
+    #     TreeNode("Telemetry", "2", location="https://github.com/UBC-Rocket/ground-station", type=Node_Type['GITHUB']),
+    # ]),
+    # TreeNode("Services", "6", [
+    #   TreeNode("Livestreaming", "7", location="https://github.com/helios-data/helios-livestreaming", type=Node_Type['GITHUB'])
+    # ]),
 ])
 
 # Prune leftover stopped containers from build step

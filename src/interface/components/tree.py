@@ -1,9 +1,16 @@
 from utils import TreeNode
-from imgui_bundle import imgui
+from imgui_bundle import imgui, icons_fontawesome_6
 
 TABLE_FLAGS = (imgui.TableFlags_.row_bg | 
                 imgui.TableFlags_.no_borders_in_body | 
                 imgui.TableFlags_.scroll_y)
+
+# Icon + color constants for docker image status
+ICON_BUILT     = "●"   # Filled circle  — image exists
+ICON_NOT_BUILT = "●"   # Same shape, different color
+COLOR_BUILT     = imgui.ImVec4(0.2, 0.85, 0.4, 1.0)   # Green
+COLOR_NOT_BUILT = imgui.ImVec4(0.85, 0.25, 0.25, 1.0)  # Red
+COLOR_UNKNOWN   = imgui.ImVec4(0.6, 0.6, 0.6, 1.0)     # Grey
 
 class TreeComponent:
 
@@ -47,7 +54,8 @@ class TreeComponent:
       draw_list.add_line((line_x, cursor_pos.y - style.item_spacing.y), (line_x, line_y_mid), line_color, 1.0)
 
     flags = imgui.TreeNodeFlags_.span_full_width | imgui.TreeNodeFlags_.open_on_arrow | imgui.TreeNodeFlags_.default_open
-    if not node.children:
+    is_leaf = not node.children
+    if is_leaf:
       flags |= imgui.TreeNodeFlags_.leaf
     
     opened = imgui.tree_node_ex(f"{node.name}##{node.id}", flags)
@@ -55,6 +63,28 @@ class TreeComponent:
     imgui.table_next_column()
     imgui.push_id(node.id)
     
+    # Docker image status icon — only shown on leaf nodes
+    if is_leaf:
+      exists = node.image_exists #! self.interface.docker_utils.check_image_exists(node)
+
+      if exists is True:
+        icon, color, tooltip = ICON_BUILT, COLOR_BUILT, "Image built"
+      elif exists is False:
+        icon, color, tooltip = ICON_NOT_BUILT, COLOR_NOT_BUILT, "Image not found"
+      else:
+        icon, color, tooltip = ICON_NOT_BUILT, COLOR_UNKNOWN, "Image status unknown"
+
+      imgui.text_colored(color, icon)
+      if imgui.is_item_hovered():
+        imgui.set_tooltip(tooltip)
+      imgui.same_line()
+
+    else:
+      # Invisible spacer to line up edit buttons
+      icon_width = imgui.calc_text_size("●").x
+      imgui.dummy((icon_width, imgui.get_text_line_height()))
+
+    imgui.same_line(spacing=4.0)
     if imgui.small_button("Edit"):
       self.edit_node = node
 

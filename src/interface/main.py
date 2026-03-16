@@ -4,7 +4,7 @@ User Interface for Project Helios using ImGui.
 
 import os
 from imgui_bundle import imgui, immapp, hello_imgui
-from utils import TreeNode, TreeUtils
+from utils import TreeNode, TreeUtils, DockerUtils
 from .components import TreeComponent, EditorComponent, QuickActions
 import serial.tools.list_ports
 
@@ -37,12 +37,21 @@ class UserInterface:
     self.data = initial_data
 
     self.tree_utils = TreeUtils()
+    self.docker_utils = DockerUtils()
 
     self.tree_component = TreeComponent(self)
     self.editor_component = EditorComponent()
     self.quick_actions = QuickActions(self)
 
-    immapp.run(self.gui, window_title=WINDOW_NAME, window_size=DEFAULT_WINDOW_SIZE)
+    runner_params = hello_imgui.RunnerParams()
+    runner_params.callbacks.show_gui = self.gui
+    runner_params.app_window_params.window_title = WINDOW_NAME
+    runner_params.app_window_params.window_geometry.size = DEFAULT_WINDOW_SIZE
+
+    # Load default font and add the font_awesome icons
+    runner_params.callbacks.default_icon_font = hello_imgui.DefaultIconFont.font_awesome6
+
+    immapp.run(runner_params=runner_params)
 
   """
   Renders the main user interface.
@@ -62,6 +71,7 @@ class UserInterface:
   
     imgui.begin("Right Sidebar", flags=SECTION_FLAGS)
     
+    # Render the Helios logo
     avail_x = imgui.get_content_region_avail().x
     logo_w = avail_x * LOGO_WIDTH_RATIO
     imgui.set_cursor_pos_x((avail_x - logo_w) * 0.5)
@@ -71,12 +81,28 @@ class UserInterface:
     imgui.separator()
     imgui.spacing()
 
+    # Quick Actions grid
     self.quick_actions.render()
 
+    # Dump the image build status
+    # TODO: hide this once build finished
+    # TODO: dropdown to display full logs?
+    for node_id, status in self.docker_utils.build_status.items():
+      step = self.docker_utils.build_step.get(node_id, "")
+      step_str = f"  [{step}]" if step else ""
+      imgui.text(f"{node_id}:  {status}{step_str}")
+
+    # Set launch disabled if the images are not all built
     imgui.set_cursor_pos_y(imgui.get_window_height() - 60)
+    launch_disabled = not self.all_images_built(self.data)
+    if launch_disabled:
+      imgui.begin_disabled(True)
     launch = imgui.button("Launch Helios", (avail_x, 40))
+    if launch_disabled:
+      imgui.end_disabled()
+
     if launch:
-      self.launch_helios()
+      self.launch_helios()  
 
     imgui.end()
     imgui.pop_style_color(2)
@@ -93,6 +119,7 @@ class UserInterface:
     imgui.text_disabled("PROJECT OVERVIEW")
     imgui.separator()
 
+    # TODO: Replace with actual stats
     imgui.same_line()
     imgui.text_wrapped("Helios Launcher v1.0\nStatus: Active\nNodes: 12")
     
@@ -116,11 +143,60 @@ class UserInterface:
     return [f"{p.device} - {p.description}" for p in ports]
 
   def launch_helios(self):
-
-    #TODO Check if eack node has a docker image built first
-    # Check whenever the thing is updated, and update an icon
-    
-
     print("Generating component tree from protobufs and configuration...")
     path = self.tree_utils.generate_component_tree(self.data)
     print(f"Component tree generated at: {path}")
+
+    # TODO: Add actual launch sequence
+
+  def scan_docker_images(self):
+    """ Check if the docker image exists for all nodes starting at the root """
+    print("Scanning all nodes for missing docker images...")
+    self._scan_node_image_exists(self.data)
+    print("Finished docker image scan.")
+
+  def _scan_node_image_exists(self, node: TreeNode) -> None:
+    """ If the current node is a leaf, check the image, if not, check its children """
+    if node.children == []:
+      node.image_exists = self.docker_utils.check_image_exists(node)
+    else:
+      for child in node.children:
+        self._scan_node_image_exists(child)
+
+  def build_missing_docker_images(self):
+    """ Build docker images for all nodes missing one """
+    print("Building all missing docker images...")
+    self._build_docker_image(self.data)
+    print("Finished building docker images.")
+
+  def _build_docker_image(self, node: TreeNode) -> None:
+    """ 
+    If the node has children, build the image for each child
+    Build the docker image if image_exists = False 
+    Does not build if image_exists = None. Run scan_docker_images() first
+    """
+    if node.children == []:
+      if node.image_exists == False:
+        self.docker_utils.build_image(node)
+        logs = self.docker_utils.get_logs(node)
+        status = self.docker_utils.build_status.get(node.id, "")
+
+        imgui.text(f"Status: {status}")
+        for line in logs:
+            imgui.text(line)
+        node.image_exists = True
+    else:
+      for child in node.children:
+        self._build_docker_image(child)
+
+  def all_images_built(self, node: TreeNode) -> bool:
+    if node.children == []:
+      if node.image_exists:
+        return True
+      else:
+        return False
+    else:
+      built = True
+      for child in node.children:
+        built = self.all_images_built(child) and built
+        return built
