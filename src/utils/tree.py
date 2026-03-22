@@ -11,7 +11,7 @@ from config.settings import *
 TREE_FILE_NAME = "component_tree.json"
 
 class TreeNode:
-  def __init__(self, name, node_id, children=None, location: str = "", hash: str = "", type: Node_Type = Node_Type['NONE'], volumes: list = [], ports: list = []):
+  def __init__(self, name, node_id, children=None, location: str = "", hash: str = "", type: Node_Type = Node_Type['NONE'], volumes: dict = {}, ports: dict = {}):
     self.name: str = name
     self.id: str = node_id
     self.children: list = children or []
@@ -19,8 +19,8 @@ class TreeNode:
     self.hash: str = hash
     self.type: Node_Type = type
     self.image_exists: bool | None = None # None, False, True
-    self.volumes: list = []
-    self.ports: list = []
+    self.volumes: dict = volumes
+    self.ports: dict = ports
 
   def to_dict(self):
     return {
@@ -104,8 +104,8 @@ class TreeUtils:
       location=data.get("location", ""),
       hash=data.get("hash", ""),
       type=Node_Type(data.get("type", 0)),
-      volumes=data.pop("volumes", []),
-      ports=data.pop("ports", [])
+      volumes=data.pop("volumes", {}),
+      ports=data.pop("ports", {})
     )
 
     node.image_exists = image_exists
