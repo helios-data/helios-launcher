@@ -52,6 +52,28 @@ class TreeUtils:
         leaf.path = node.location or ""
         leaf.tag = node.hash or "latest"
         leaf.id = node.id
+
+        leaf.location = node.location or ""
+        leaf.hash = node.hash or ""
+        leaf.type = node.type.name  # or .value if you want the int as a string
+
+        for vol in node.volumes:  # list of dicts — iterate directly
+            v = component.Volume()
+            v.source = vol.get("source", "")
+            v.target = vol.get("target", "")
+            v.mode = vol.get("mode", "")
+            leaf.volumes.append(v)
+
+        for port in node.ports.keys():  # dict — use .values()
+            p = component.Port()
+            p.target = port
+            p.source = node.ports[port]
+            # p.type = port.get("type", "")
+            # p.source = port.get("source", "")
+            # p.target = port.get("target", "")
+            # p.read_only = port.get("read_only", "")
+            leaf.ports.append(p)
+
         base.leaf.CopyFrom(leaf)
       else: # Branch
         branch = component.ComponentGroup()
