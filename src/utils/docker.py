@@ -5,6 +5,7 @@ from .github import GithubUtils
 from .tree import TreeNode
 from config import *
 import re
+import json
 
 REMOVE_BUILD_INTERMEDIATES = True 
 
@@ -18,7 +19,7 @@ class DockerUtils:
     self.build_status: dict[str, str] = {}        # node.id → "building" | "done" | "error"
     self.build_step: dict[str, str] = {}  # ← node.id → "5/15"
 
-  def check_image_exists(self, node: TreeNode) -> bool:
+  def check_image_exists(self, node: TreeNode) -> tuple[bool, dict]:
     filters = {
       "label": [
         f"location={node.location}",
@@ -27,8 +28,26 @@ class DockerUtils:
       ]
     }
 
-    list_i = self.client.images.list(name=node.name.lower(), filters=filters)
-    return len(list_i) > 0
+    images = self.client.images.list(name=node.name.lower(), filters=filters)
+    
+    if not images:
+      return False, {"ports": [], "volumes": []}
+
+    found_labels = images[0].labels
+    
+    ports_raw = found_labels.get("ports", "[]")
+    volumes_raw = found_labels.get("volumes", "[]")
+
+    ports = json.loads(ports_raw)
+    volumes = json.loads(volumes_raw)
+
+    if not ports == [] or not volumes == []:
+      node.warning = True
+
+    return True, {
+      "ports": ports,
+      "volumes": volumes
+    }
 
   def build_image(self, node: TreeNode) -> None:
     """ Starts a background thread to build the image, streaming logs into self.build_logs """
@@ -47,11 +66,22 @@ class DockerUtils:
             hash=node.hash
         )
       else:
-        path = node.location
+        path = Path(node.location)
         hash = None
 
       self.build_logs[node.name].append(f"Building docker image for {node.name}...\n")
 
+      # Get the required configuration ports/volumes
+      with open(path / 'config.json', 'r') as file:
+        data = json.load(file)
+
+        node.ports = {port: None for port in data.get('ports', [])}
+        node.volumes = data.get('volumes', [])
+
+        if not node.ports == [] or not node.volumes == []:
+          node.warning = True
+
+      # Build the docker image
       build_stream = self.client.api.build(
         path=str(path),
         tag=node.name.lower(),
@@ -59,6 +89,8 @@ class DockerUtils:
           "type": str(node.type.value),
           "location": node.location,
           "hash": str(hash),
+          "ports": json.dumps(list(node.ports.keys())), # convert the dict_keys to str
+          "volumes": json.dumps(list(node.volumes)),
         },
         rm=REMOVE_BUILD_INTERMEDIATES,
         decode=True  # ← auto-decodes each chunk from JSON
@@ -93,6 +125,7 @@ class DockerUtils:
     except Exception as e:
       self.build_logs[node.name].append(f"ERROR: {e}\n")
       self.build_status[node.name] = "error"
+      print(e)
 
   def is_build_running(self, node: TreeNode) -> bool:
     return self.build_status.get(node.name) == "building"
