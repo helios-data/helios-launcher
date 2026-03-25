@@ -158,11 +158,14 @@ class UserInterface:
   def _scan_node_image_exists(self, node: TreeNode) -> None:
     """ If the current node is a leaf, check the image, if not, check its children """
     if node.children == []:
-      node.image_exists, required = self.docker_utils.check_image_exists(node)
+      if not bool(node.image_exists):
+        # Only scan if the image hasnt been found yet
+        # Works because any changes will automatically change image_exists to None
+        node.image_exists, required = self.docker_utils.check_image_exists(node)
 
-      # Load the saved required specs for the image
-      node.ports = {port: None for port in required.get('ports', [])}
-      node.volumes = required.get('volumes', [])
+        # Load the saved required specs for the image
+        node.ports = {port: None for port in required.get('ports', [])}
+        node.volumes = required.get('volumes', [])
     else:
       for child in node.children:
         self._scan_node_image_exists(child)
