@@ -21,6 +21,7 @@ class TreeNode:
     self.image_exists: bool | None = None # None, False, True
     self.volumes: dict = volumes
     self.ports: dict = ports
+    self.warning: bool = False
 
   def to_dict(self):
     return {
