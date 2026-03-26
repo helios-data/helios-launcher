@@ -10,7 +10,7 @@ root_data = TreeNode("Helios", "root", [
     #     TreeNode("Telemetry", "2", location="https://github.com/UBC-Rocket/ground-station", type=Node_Type['GITHUB']),
     # ]),
     TreeNode("Services", "6", [
-      TreeNode("Livestreaming", "7", location="https://github.com/helios-data/helios-livestreaming", type=Node_Type['GITHUB'], hash="60b05598f0626a6e16a63e598073f2bbed41055a")
+      TreeNode("Livestreaming", "7", location="https://github.com/helios-data/helios-livestreaming", type=Node_Type['GITHUB'], hash="a2202d371479e17ea44c2acb5d7390a145c8528c")
     ]),
 ])
 
