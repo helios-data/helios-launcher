@@ -88,6 +88,14 @@ class TreeComponent:
     if imgui.small_button("Edit"):
       self.edit_node = node
 
+    imgui.same_line()
+    if node.warning:
+      imgui.text_colored((1.0, 0.2, 0.2, 1.0), "⚠")
+      imgui.same_line()
+
+      if imgui.is_item_hovered():
+        imgui.set_tooltip("Required ports/volumes not selected")
+
     imgui.pop_id()
     
     if opened:

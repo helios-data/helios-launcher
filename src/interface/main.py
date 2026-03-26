@@ -94,7 +94,7 @@ class UserInterface:
 
     # Set launch disabled if the images are not all built
     imgui.set_cursor_pos_y(imgui.get_window_height() - 60)
-    launch_disabled = not self.all_images_built(self.data)
+    launch_disabled = not self.no_container_warnings(self.data)
     if launch_disabled:
       imgui.begin_disabled(True)
     launch = imgui.button("Launch Helios", (avail_x, 40))
@@ -131,7 +131,7 @@ class UserInterface:
     self.tree_component.render(-footer_height)
 
     if editing_node:
-      self.editor_component.render(editing_node, height=footer_height, on_close_callback=self.close_editting_node, ports=self.get_ports_list())
+      self.editor_component.render(editing_node, height=footer_height, on_close_callback=self.close_editting_node, available_ports=self.get_ports_list())
 
     imgui.end()
 
@@ -140,7 +140,7 @@ class UserInterface:
 
   def get_ports_list(self):
     ports = serial.tools.list_ports.comports()
-    return [f"{p.device} - {p.description}" for p in ports]
+    return ["None"] + [f"{p.device} - {p.description}" for p in ports]
 
   def launch_helios(self):
     print("Generating component tree from protobufs and configuration...")
@@ -158,7 +158,14 @@ class UserInterface:
   def _scan_node_image_exists(self, node: TreeNode) -> None:
     """ If the current node is a leaf, check the image, if not, check its children """
     if node.children == []:
-      node.image_exists = self.docker_utils.check_image_exists(node)
+      if not bool(node.image_exists):
+        # Only scan if the image hasnt been found yet
+        # Works because any changes will automatically change image_exists to None
+        node.image_exists, required = self.docker_utils.check_image_exists(node)
+
+        # Load the saved required specs for the image
+        node.ports = {port: None for port in required.get('ports', [])}
+        node.volumes = required.get('volumes', [])
     else:
       for child in node.children:
         self._scan_node_image_exists(child)
@@ -188,15 +195,12 @@ class UserInterface:
     else:
       for child in node.children:
         self._build_docker_image(child)
-
-  def all_images_built(self, node: TreeNode) -> bool:
+    
+  def no_container_warnings(self, node: TreeNode) -> bool:
     if node.children == []:
-      if node.image_exists:
-        return True
-      else:
-        return False
+        return bool(node.image_exists) and not node.warning
     else:
       built = True
       for child in node.children:
-        built = self.all_images_built(child) and built
-        return built
+        built = self.no_container_warnings(child) and built
+      return built

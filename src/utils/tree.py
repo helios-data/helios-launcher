@@ -11,7 +11,7 @@ from config.settings import *
 TREE_FILE_NAME = "component_tree.json"
 
 class TreeNode:
-  def __init__(self, name, node_id, children=None, location: str = "", hash: str = "", type: Node_Type = Node_Type['NONE'], volumes: list = [], ports: list = []):
+  def __init__(self, name, node_id, children=None, location: str = "", hash: str = "", type: Node_Type = Node_Type['NONE'], volumes: dict = {}, ports: dict = {}):
     self.name: str = name
     self.id: str = node_id
     self.children: list = children or []
@@ -19,8 +19,9 @@ class TreeNode:
     self.hash: str = hash
     self.type: Node_Type = type
     self.image_exists: bool | None = None # None, False, True
-    self.volumes: list = []
-    self.ports: list = []
+    self.volumes: dict = volumes
+    self.ports: dict = ports
+    self.warning: bool = False
 
   def to_dict(self):
     return {
@@ -51,6 +52,28 @@ class TreeUtils:
         leaf.path = node.location or ""
         leaf.tag = node.hash or "latest"
         leaf.id = node.id
+
+        leaf.location = node.location or ""
+        leaf.hash = node.hash or ""
+        leaf.type = node.type.name  # or .value if you want the int as a string
+
+        for vol in node.volumes:  # list of dicts — iterate directly
+            v = component.Volume()
+            v.source = vol.get("source", "")
+            v.target = vol.get("target", "")
+            v.mode = vol.get("mode", "")
+            leaf.volumes.append(v)
+
+        for port in node.ports.keys():  # dict — use .values()
+            p = component.Port()
+            p.target = port
+            p.source = node.ports[port]
+            # p.type = port.get("type", "")
+            # p.source = port.get("source", "")
+            # p.target = port.get("target", "")
+            # p.read_only = port.get("read_only", "")
+            leaf.ports.append(p)
+
         base.leaf.CopyFrom(leaf)
       else: # Branch
         branch = component.ComponentGroup()
@@ -104,8 +127,8 @@ class TreeUtils:
       location=data.get("location", ""),
       hash=data.get("hash", ""),
       type=Node_Type(data.get("type", 0)),
-      volumes=data.pop("volumes", []),
-      ports=data.pop("ports", [])
+      volumes=data.pop("volumes", {}),
+      ports=data.pop("ports", {})
     )
 
     node.image_exists = image_exists
