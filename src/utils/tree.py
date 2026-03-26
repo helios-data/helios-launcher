@@ -41,7 +41,7 @@ class TreeUtils:
     pass
 
   def generate_component_tree(self, root_node: TreeNode) -> Path:
-    tree_location = Path(ROOT) / TEMP_FOLDER / TREE_FILE_NAME
+    tree_location = self.get_tree_path()
 
     def build_proto_node(node: TreeNode) -> component.BaseComponent:
       base = component.BaseComponent()
@@ -137,3 +137,6 @@ class TreeUtils:
       node.children.append(self._dict_to_node(child_dict))
 
     return node
+  
+  def get_tree_path(self) -> Path:
+    return Path(ROOT) / TEMP_FOLDER / TREE_FILE_NAME

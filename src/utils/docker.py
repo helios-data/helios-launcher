@@ -1,13 +1,23 @@
 import docker
 from docker.errors import DockerException
+from docker.models.containers import Container
 import threading
 from .github import GithubUtils
 from .tree import TreeNode
 from config import *
 import re
 import json
+import time
+import sys
 
 REMOVE_BUILD_INTERMEDIATES = True 
+
+DOCKER_VOLUME_CONFIG = {
+  '/var/run/docker.sock': {
+    'bind': '/var/run/docker.sock',
+    'mode': 'rw' # Read-write access
+  }
+}
 
 class DockerUtils:
 
@@ -18,6 +28,9 @@ class DockerUtils:
     self.build_logs: dict[str, list[str]] = {}   # node.id → list of log lines
     self.build_status: dict[str, str] = {}        # node.id → "building" | "done" | "error"
     self.build_step: dict[str, str] = {}  # ← node.id → "5/15"
+
+    # TODO: UPDATE THIS DYNAMICALLY
+    self.runtime_hash = f"123456789-{time.time()}"
 
   def check_image_exists(self, node: TreeNode) -> tuple[bool, dict]:
     filters = {
@@ -143,3 +156,75 @@ class DockerUtils:
       return client
     except DockerException:
       raise RuntimeError("Docker is not running. Please start Docker and try again.")
+
+  def check_container_exists(self, name: str) -> tuple[bool, str, Container | None]:
+    list = self.client.containers.list(all=True, filters={"name": name})
+    if not list:
+      return False, "none", None
+    
+    old_container = list[0]
+    old_hash = old_container.labels.get('runtime_hash', None)
+
+    if old_hash == self.runtime_hash:
+      if old_container.status == "running":
+        return True, "running", old_container
+      elif old_container.status == "exited":
+        return True, "exited", old_container
+      else:
+        return False, "error", old_container
+    else:
+      # Outdated container
+      return True, "outdated", old_container
+    
+  def start_helios(self, tree_path: Path):
+    #TODO: Have a dynamic name pulling based on node ID?
+    running, status, cont = self.check_container_exists("Helios")
+
+    if status == "error":
+      print("Ran into an unknown error. Stopping.")
+      return 
+
+    if running == True:
+      if status == "running":
+        print("Helios container is already running. No additional builds will be run.")
+        return
+      elif status == "exited":
+        print("Helios container is up-to-date. Starting it back up...")
+        if not cont == None: cont.restart()
+      elif status == "outdated":
+        print("Helios container is outdated. Removing it...")
+        if not cont == None: cont.remove(force=True)
+
+    mount_volumes = DOCKER_VOLUME_CONFIG | {
+        str(tree_path): {
+          'bind': '/temp/component_tree.json',
+          'mode': 'ro' # Read-only access
+        }
+      }
+
+    print("Starting a new Helios container...")
+    container = self.client.containers.run(
+      'helioscore', # TODO: DYNAMIC NAME FROM NODE 
+      name='Helios', 
+      detach=True,
+      volumes=mount_volumes,
+      labels={
+        'runtime_hash': self.runtime_hash
+      },
+      environment={
+        'RUNTIME_HASH': self.runtime_hash,
+        'COMPONENT_TREE_PATH': '/temp/component_tree.json'
+      }
+    )
+
+    time.sleep(2) 
+    container.reload()
+
+    if container.status == "running":
+      print("Helios is up! Running the next task...")
+      print("Shutting down...")
+      sys.exit(0)
+    else:
+      logs = container.logs().decode('utf-8')
+      print(f"Container failed to stay up. Status: {container.status}\n")
+      print(f"============== Logs ============== \n{logs}")

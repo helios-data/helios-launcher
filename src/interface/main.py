@@ -147,7 +147,8 @@ class UserInterface:
     path = self.tree_utils.generate_component_tree(self.data)
     print(f"Component tree generated at: {path}")
 
-    # TODO: Add actual launch sequence
+    tree_path = self.tree_utils.get_tree_path()
+    self.docker_utils.start_helios(tree_path=tree_path)
 
   def scan_docker_images(self):
     """ Check if the docker image exists for all nodes starting at the root """
