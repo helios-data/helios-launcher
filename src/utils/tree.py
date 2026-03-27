@@ -1,6 +1,3 @@
-import os
-import sys
-
 from pathlib import Path
 from google.protobuf import json_format
 import generated.config.component_pb2 as component
@@ -43,11 +40,15 @@ class TreeUtils:
   def generate_component_tree(self, root_node: TreeNode) -> Path:
     tree_location = self.get_tree_path()
 
-    def build_proto_node(node: TreeNode) -> component.BaseComponent:
+    def build_proto_node(node: TreeNode) -> component.BaseComponent | None:
       base = component.BaseComponent()
       base.name = node.name
 
       if not node.children: # Leaf
+
+        # We don't want to pass HeliosCore to Helios, since it shouldn't build itself
+        if node.name == HELIOS_CORE_CONTAINER: return None
+
         leaf = component.Component()
         leaf.path = node.location or ""
         leaf.tag = node.hash or "latest"
@@ -80,7 +81,8 @@ class TreeUtils:
         for child in node.children:
           # Recursively build child BaseComponents
           proto_child = build_proto_node(child)
-          branch.children.append(proto_child)
+          if not proto_child == None:
+            branch.children.append(proto_child)
         base.branch.CopyFrom(branch)
       
       return base
