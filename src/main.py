@@ -5,7 +5,7 @@ from config.settings import *
 
 # Mock data
 root_data = TreeNode("Helios", "root", [
-    TreeNode("HeliosCore", "3", location="https://github.com/helios-data/helios-core", type=Node_Type['GITHUB'], hash="84e7aad25fccd25d4b0e13a7d559550722f34fb2"),
+    TreeNode(HELIOS_CORE_CONTAINER, "3", location="https://github.com/helios-data/helios-core", type=Node_Type['GITHUB'], hash="da98a37aeb2862c48ac00ddca86686a1cf85ffdd"),
     # TreeNode("FALCON", "1", [
     #     TreeNode("Telemetry", "2", location="https://github.com/UBC-Rocket/ground-station", type=Node_Type['GITHUB']),
     # ]),
