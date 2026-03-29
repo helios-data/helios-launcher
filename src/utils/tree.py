@@ -1,6 +1,5 @@
 from pathlib import Path
-from google.protobuf import json_format
-import generated.config.component_pb2 as component
+import generated.helios.config as component
 import json
 
 from config.settings import *
@@ -19,6 +18,7 @@ class TreeNode:
     self.volumes: dict = volumes
     self.ports: dict = ports
     self.warning: bool = False
+    self.skip_spawn: bool = False
 
   def to_dict(self):
     return {
@@ -57,25 +57,26 @@ class TreeUtils:
         leaf.location = node.location or ""
         leaf.hash = node.hash or ""
         leaf.type = node.type.name  # or .value if you want the int as a string
+        leaf.skip_spawn = node.skip_spawn
 
         for vol in node.volumes:  # list of dicts — iterate directly
             v = component.Volume()
             v.source = vol.get("source", "")
-            v.target = vol.get("target", "")
+            v.target = vol.get("name", "") # TODO: change to "target" once we update the frontend
             v.mode = vol.get("mode", "")
             leaf.volumes.append(v)
 
         for port in node.ports.keys():  # dict — use .values()
             p = component.Port()
             p.target = port
-            p.source = node.ports[port]
+            p.source = node.ports[port].split(":")[0] if node.ports[port] else ""
             # p.type = port.get("type", "")
             # p.source = port.get("source", "")
             # p.target = port.get("target", "")
             # p.read_only = port.get("read_only", "")
             leaf.ports.append(p)
 
-        base.leaf.CopyFrom(leaf)
+        base.leaf = leaf
       else: # Branch
         branch = component.ComponentGroup()
         for child in node.children:
@@ -83,18 +84,18 @@ class TreeUtils:
           proto_child = build_proto_node(child)
           if not proto_child == None:
             branch.children.append(proto_child)
-        base.branch.CopyFrom(branch)
+        base.branch = branch
       
       return base
 
     root_proto_node = build_proto_node(root_node)
 
     component_tree = component.ComponentTree()
-    component_tree.root.CopyFrom(root_proto_node)
+    component_tree.root = root_proto_node
     component_tree.version = "1.0.0"
 
     with open(tree_location, "w") as f:
-      json_string = json_format.MessageToJson(component_tree, indent=2)
+      json_string = component_tree.to_json(indent=2)
       f.write(json_string)
 
     return tree_location
