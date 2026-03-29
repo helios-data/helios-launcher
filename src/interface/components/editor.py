@@ -47,6 +47,11 @@ class EditorComponent:
         self.node_changed(node)
         node.hash = new_hash
 
+      changed_skip_spawn, new_skip_spawn = imgui.checkbox("Skip Docker Spawn", node.skip_spawn)
+      if changed_skip_spawn:
+        self.node_changed(node)
+        node.skip_spawn = new_skip_spawn
+
       imgui.spacing()
 
       # --- Advanced Settings - Ports ---

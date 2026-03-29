@@ -140,7 +140,7 @@ class UserInterface:
 
   def get_ports_list(self):
     ports = serial.tools.list_ports.comports()
-    return ["None"] + [f"{p.device} - {p.description}" for p in ports]
+    return ["None"] + [f"{p.device}:{p.description}" for p in ports]
 
   def launch_helios(self):
     print("Generating component tree from protobufs and configuration...")
