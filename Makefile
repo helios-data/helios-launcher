@@ -1,4 +1,4 @@
-.PHONY: proto deps run
+.PHONY: proto deps run submodule
 
 # Variables
 PROTO_SOURCE_DIR=helios-protos
@@ -29,3 +29,6 @@ run:
 	fi
 
 	uv run src/main.py
+
+submodule:
+	git submodule update --remote --merge
