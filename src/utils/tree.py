@@ -95,7 +95,10 @@ class TreeUtils:
     component_tree.version = "1.0.0"
 
     with open(tree_location, "w") as f:
-      json_string = component_tree.to_json(indent=2)
+      json_string = component_tree.to_json(
+        indent=2, 
+        include_default_values=True, 
+      )
       f.write(json_string)
 
     return tree_location
