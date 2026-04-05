@@ -131,12 +131,24 @@ class UserInterface:
     self.tree_component.render(-footer_height)
 
     if editing_node:
-      self.editor_component.render(editing_node, height=footer_height, on_close_callback=self.close_editting_node, available_ports=self.get_ports_list())
+      self.editor_component.render(
+        node=editing_node, 
+        height=footer_height, 
+        on_close_callback=self.close_editting_node, 
+        on_delete_callback=self.delete_editting_node, 
+        available_ports=self.get_ports_list()
+      )
 
     imgui.end()
 
   def close_editting_node(self):
     self.tree_component.clear_editting_mode()
+
+  def delete_editting_node(self):
+    node_to_delete = self.tree_component.edit_node
+    if node_to_delete:
+      self.tree_component.delete_node(node_to_delete)
+      self.tree_component.clear_editting_mode()
 
   def get_ports_list(self):
     ports = serial.tools.list_ports.comports()
