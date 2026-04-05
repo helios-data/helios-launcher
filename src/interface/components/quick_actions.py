@@ -1,14 +1,21 @@
+from platform import node
+
 from imgui_bundle import imgui
 from config.settings import *
+from utils.tree import TreeNode
 
 class QuickActions:
   def __init__(self, interface):
     self.interface = interface # User interface class
+    self.add_node_modal = False
     self.open_save_modal = False
     self.open_load_modal = False
     self.file_name = ""
     self.load_configs = []
     self.load_selected_index = 0
+    self.new_node = None
+    self.new_parent = None
+    self.new_parent_index = 0
 
   def _refresh_load_configs(self):
     """Scans for .json configs and strips extensions for display."""
@@ -28,7 +35,8 @@ class QuickActions:
     if imgui.begin_table("Actions", 2):
       imgui.table_next_row()
       imgui.table_next_column()
-      if imgui.button("Add Component", (-1, 40)): pass
+      if imgui.button("Add Component", (-1, 40)): 
+        self.add_node_modal = True
       imgui.table_next_column()
       if imgui.button("Global Settings", (-1, 40)): pass
       imgui.table_next_row()
@@ -46,10 +54,9 @@ class QuickActions:
         self.file_name = ""
       imgui.table_next_column()
       if imgui.button("Load Configuration", (-1, 40)): 
-        print("Loading saved configuration...")
+        print("Opening load modal...")
         self._refresh_load_configs()  # scan fresh every time modal opens
         self.open_load_modal = True
-        print(f"Configuration loaded.")
       imgui.end_table()
 
     if self.open_save_modal:
@@ -58,9 +65,13 @@ class QuickActions:
     if self.open_load_modal:
       imgui.open_popup("load_config_modal")
       self.open_load_modal = False
+    if self.add_node_modal:
+      imgui.open_popup("add_node_modal")
+      self.add_node_modal = False
 
     self._render_save_modal()
     self._render_load_modal()
+    self._render_add_modal()
 
   def _render_save_modal(self):
     # Window styling
@@ -237,6 +248,117 @@ class QuickActions:
     if imgui.button("Cancel", (button_width, 36)):
       imgui.close_current_popup()
       self.open_load_modal = False
+    imgui.pop_style_color(3)
+
+    imgui.end_popup()
+
+  def _render_add_modal(self):
+    # Window styling
+    self._render_popup_styling()
+
+    imgui.set_next_window_size((380, 0))  # fixed width, auto height
+
+    opened, show = imgui.begin_popup_modal("add_node_modal", True,
+                                           imgui.WindowFlags_.no_title_bar |
+                                           imgui.WindowFlags_.no_resize)
+    imgui.pop_style_var(5)
+    imgui.pop_style_color(6)
+
+    if not opened:
+      return
+
+    if self.new_node is not None:
+      node = self.new_node
+    else:
+      node = TreeNode(
+        name="New Component",
+        node_id=self.interface.generate_node_id()
+      )
+      self.new_node = node
+
+    # Title row
+    imgui.push_style_color(imgui.Col_.text, (0.88, 0.90, 0.94, 1.00))
+    imgui.text("Add Node")
+    imgui.pop_style_color()
+
+    imgui.push_style_color(imgui.Col_.separator, (0.25, 0.27, 0.32, 1.00))
+    imgui.separator()
+    imgui.pop_style_color()
+
+    imgui.spacing()
+    imgui.push_style_color(imgui.Col_.text, (0.88, 0.90, 0.94, 1.00))
+    
+    nodes = self.interface.get_node_names()
+    changed_parent, new_parent = imgui.combo("Parent", self.new_parent_index, ["None"] + nodes)
+    if changed_parent:
+      self.new_parent_index = new_parent
+      # Index 0 is "None", so subtract 1 to get actual node index
+      self.new_parent = nodes[new_parent - 1] if new_parent > 0 else None
+
+    imgui.spacing()
+    imgui.separator()
+    imgui.spacing()
+
+    changed, new_name = imgui.input_text("Name", node.name, 128)
+    if changed:
+      node.name = new_name
+
+    if node.children == []:    
+      changed_type, new_type = imgui.combo("Node Type", node.type.value, [node.name for node in Node_Type])
+      if changed_type:
+        node.type = Node_Type(new_type)
+
+      changed_location, new_location = imgui.input_text("Location", node.location, 128)
+      if changed_location:
+        node.location = new_location
+
+      changed_hash, new_hash = imgui.input_text("Hash", node.hash, 128)
+      if changed_hash:
+        node.hash = new_hash
+
+      changed_skip_spawn, new_skip_spawn = imgui.checkbox("Skip Docker Spawn", node.skip_spawn)
+      if changed_skip_spawn:
+        node.skip_spawn = new_skip_spawn
+
+      imgui.spacing()
+    imgui.pop_style_color()
+
+    # Buttons
+    button_width = (imgui.get_content_region_avail()[0] - 10) / 2
+
+    # Save — accented blue
+    imgui.push_style_color(imgui.Col_.button,         (0.20, 0.45, 0.90, 1.00))
+    imgui.push_style_color(imgui.Col_.button_hovered, (0.28, 0.53, 1.00, 1.00))
+    imgui.push_style_color(imgui.Col_.button_active,  (0.15, 0.38, 0.80, 1.00))
+
+    if not self.new_parent:
+      disabled = True    
+      imgui.begin_disabled()
+    else:
+      disabled = False
+    if imgui.button("Save", (button_width, 36)):
+      self.interface.add_new_node(self.new_node, self.new_parent)
+      imgui.close_current_popup()
+      self.add_node_modal = False
+      self.new_node = None
+      self.new_parent = None
+      self.new_parent_index = 0
+    if disabled:
+      imgui.end_disabled()
+    imgui.pop_style_color(3)
+
+    imgui.same_line()
+
+    # Cancel — subtle ghost button
+    imgui.push_style_color(imgui.Col_.button,         (0.20, 0.21, 0.25, 1.00))
+    imgui.push_style_color(imgui.Col_.button_hovered, (0.26, 0.27, 0.32, 1.00))
+    imgui.push_style_color(imgui.Col_.button_active,  (0.16, 0.17, 0.20, 1.00))
+    if imgui.button("Cancel", (button_width, 36)):
+      imgui.close_current_popup()
+      self.add_node_modal = False
+      self.new_node = None
+      self.new_parent = None
+      self.new_parent_index = 0
     imgui.pop_style_color(3)
 
     imgui.end_popup()
