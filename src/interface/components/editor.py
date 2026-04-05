@@ -74,10 +74,11 @@ class EditorComponent:
         on_close_callback()
 
     imgui.same_line()
-
-    if imgui.button("Delete", (button_width, 0)):
-      if on_delete_callback:
-        on_delete_callback()
+    
+    if node.id != "root" and node.id != "main":  # Don't allow deleting root or main node
+      if imgui.button("Delete", (button_width, 0)):
+        if on_delete_callback:
+          on_delete_callback()
         
     imgui.end_child()
 
