@@ -36,6 +36,8 @@ class UserInterface:
   def __init__(self, initial_data: TreeNode):
     self.data = initial_data
 
+    self.next_node_id = 1 # Track the next available node ID for unique identification
+
     self.tree_utils = TreeUtils()
     self.docker_utils = DockerUtils()
 
@@ -217,3 +219,38 @@ class UserInterface:
       for child in node.children:
         built = self.no_container_warnings(child) and built
       return built
+    
+  def generate_node_id(self) -> str:
+    """ Generates a unique node ID """
+    node_id = f"node_{self.next_node_id}"
+    self.next_node_id += 1
+    return node_id
+  
+  def get_node_names(self) -> list:
+    """ Returns a list of all node names in the tree for dropdowns and validation """
+    names = []
+    def traverse(node: TreeNode):
+      names.append(node.name)
+      for child in node.children:
+        traverse(child)
+    traverse(self.data)
+    return names
+  
+  def add_new_node(self, node: TreeNode, parent_name: str) -> None:
+    """ Adds a new node to the tree under the specified parent """
+    parent_node = self.find_node_by_name(self.data, parent_name)
+    print(f"Adding new node '{node.name}' under parent '{parent_name}'")
+    if parent_node is not None:
+      parent_node.children.append(node)
+    else:
+      print(f"Parent node '{parent_name}' not found. Cannot add new node '{node.name}'.")
+
+  def find_node_by_name(self, node: TreeNode, name: str) -> TreeNode | None:
+    """ Recursively searches for a node by name and returns it """
+    if node.name == name:
+      return node
+    for child in node.children:
+      result = self.find_node_by_name(child, name)
+      if result is not None:
+        return result
+    return None
