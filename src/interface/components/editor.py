@@ -7,7 +7,7 @@ class EditorComponent:
     #self.current_node = None
     pass
 
-  def render(self, node: TreeNode | None, height: float = 0, on_close_callback=None, available_ports: list = ["None"]) -> None:
+  def render(self, node: TreeNode | None, height: float = 0, on_close_callback=None, on_delete_callback=None, available_ports: list = ["None"]) -> None:
     if not node:
       self.current_node = None
       return
@@ -67,9 +67,18 @@ class EditorComponent:
     imgui.spacing()
 
     # --- Footer ---
-    if imgui.button("Close", (-1, 0)):
+    button_width = (imgui.get_content_region_avail()[0] - imgui.get_style().item_spacing.x) / 2
+
+    if imgui.button("Close", (button_width, 0)):
       if on_close_callback:
         on_close_callback()
+
+    imgui.same_line()
+    
+    if node.id != "root" and node.id != "main":  # Don't allow deleting root or main node
+      if imgui.button("Delete", (button_width, 0)):
+        if on_delete_callback:
+          on_delete_callback()
         
     imgui.end_child()
 

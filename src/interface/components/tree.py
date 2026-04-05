@@ -118,3 +118,16 @@ class TreeComponent:
 
   def clear_editting_mode(self):
     self.edit_node = None
+
+  def delete_node(self, node_to_delete: TreeNode):
+    """ Deletes the specified node from the tree. If the node is not found, does nothing. """
+    def recursive_delete(current_node: TreeNode, target_node: TreeNode) -> bool:
+      if target_node in current_node.children:
+        current_node.children.remove(target_node)
+        return True
+      for child in current_node.children:
+        if recursive_delete(child, target_node):
+          return True
+      return False
+    
+    recursive_delete(self.interface.data, node_to_delete)
