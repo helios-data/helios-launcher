@@ -104,14 +104,14 @@ class TreeUtils:
     return tree_location
 
   def save_tree_as_dict(self, root: TreeNode, file_name: str = "configuration.json"):
-    with open(ROOT / TEMP_FOLDER / file_name, "w") as f:
+    with open(ROOT / ROCKET_CONFIG_FOLDER / file_name, "w") as f:
       data = root.to_dict()
       json.dump(data, f, indent=2)
     
     pass
 
   def load_tree_from_dict(self, file_name: str = "configuration.json") -> TreeNode:
-    file_path = Path(ROOT) / TEMP_FOLDER / file_name
+    file_path = Path(ROOT) / ROCKET_CONFIG_FOLDER / file_name
         
     if not file_path.exists():
       raise FileNotFoundError(f"No tree configuration found at {file_path}")

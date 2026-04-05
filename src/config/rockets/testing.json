@@ -1,0 +1,69 @@
+{
+  "name": "Helios",
+  "id": "root",
+  "location": "",
+  "hash": "",
+  "type": 0,
+  "image_exists": null,
+  "volumes": {},
+  "ports": {},
+  "children": [
+    {
+      "name": "HeliosCore",
+      "id": "3",
+      "location": "https://github.com/helios-data/helios-core",
+      "hash": "9bbb69055a106216eb26b84d7ee7d70e26828d64",
+      "type": 1,
+      "image_exists": null,
+      "volumes": {},
+      "ports": {},
+      "children": []
+    },
+    {
+      "name": "FALCON",
+      "id": "1",
+      "location": "",
+      "hash": "",
+      "type": 0,
+      "image_exists": null,
+      "volumes": {},
+      "ports": {},
+      "children": [
+        {
+          "name": "Telemetry",
+          "id": "2",
+          "location": "https://github.com/UBC-Rocket/helios-cots-telemetry",
+          "hash": "25c6d05ea62b5d301a8dbdf31cdd60b21e42b9d3",
+          "type": 1,
+          "image_exists": null,
+          "volumes": {},
+          "ports": {},
+          "children": []
+        }
+      ]
+    },
+    {
+      "name": "Services",
+      "id": "6",
+      "location": "",
+      "hash": "",
+      "type": 0,
+      "image_exists": null,
+      "volumes": {},
+      "ports": {},
+      "children": [
+        {
+          "name": "Livestreaming",
+          "id": "7",
+          "location": "https://github.com/helios-data/helios-livestreaming",
+          "hash": "46daf4ebebc70dea5e4560999428f99b271f2659",
+          "type": 1,
+          "image_exists": null,
+          "volumes": {},
+          "ports": {},
+          "children": []
+        }
+      ]
+    }
+  ]
+}
