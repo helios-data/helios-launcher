@@ -33,11 +33,16 @@ class DockerUtils:
     self.runtime_hash = f"123456789-{time.time()}"
 
   def check_image_exists(self, node: TreeNode) -> tuple[bool, dict]:
+    node_hash = node.hash
+
+    if not node.hash or node.hash == "latest":
+      node_hash = self.github_utils.get_latest_hash(node.location) if node.type == Node_Type['GITHUB'] else None
+
     filters = {
       "label": [
         f"location={node.location}",
         f"type={node.type.value}",
-        f"hash={node.hash}"
+        f"hash={node_hash}"
       ]
     }
 

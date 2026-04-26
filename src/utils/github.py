@@ -14,6 +14,15 @@ class GithubUtils:
     os.chmod(path, stat.S_IWRITE)
     func(path)
 
+  def get_latest_hash(self, repo_url: str, branch: str = 'HEAD') -> str:
+    """ Fetches the latest commit hash from the remote repository """
+    g = git.Git()
+    remote_refs = g.ls_remote(repo_url, branch)
+
+    if remote_refs:
+      return remote_refs.split()[0]
+    raise GitCommandError("ls-remote", "Could not retrieve remote hash.")
+
   def clone_repo(self, target_dir: Path, repo_url: str, hash: str | None = None) -> str | None:
     try:
       # TODO: Don't force remove, instead use a temp folder library handler?
@@ -22,8 +31,12 @@ class GithubUtils:
 
       print(f"Cloning into {target_dir}...")
       repo = git.Repo.clone_from(repo_url, target_dir, multi_options=["--recurse-submodules"])
+      #repo = git.Repo.clone_from(repo_url, target_dir, multi_options=["--recurse-submodules", "-c", "core.sshCommand=ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"], allow_unsafe_options=True)
 
       if hash:
+        if hash == "latest":
+          hash = self.get_latest_hash(repo_url)
+
         print(f"Checking out commit {hash}...")
         repo.git.checkout(hash)
 
