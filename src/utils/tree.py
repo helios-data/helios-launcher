@@ -124,8 +124,6 @@ class TreeUtils:
   def _dict_to_node(self, data: dict) -> TreeNode:
     """Recursively converts a dictionary back into a TreeNode object."""
     children_data = data.pop("children", [])
-    
-    image_exists = data.pop("image_exists", None)
 
     node = TreeNode(
       name=data.get("name"),
@@ -137,7 +135,8 @@ class TreeUtils:
       ports=data.pop("ports", {})
     )
 
-    node.image_exists = image_exists
+    # Always need to scan if docker images exist if loading
+    node.image_exists = False
 
     for child_dict in children_data:
       node.children.append(self._dict_to_node(child_dict))
