@@ -140,6 +140,9 @@ class DockerUtils:
       self.build_logs[node.name].append(f"Finished building {node.name}.\n")
       self.build_status[node.name] = "done"
 
+      # Update GUI to show the image is built
+      node.image_exists = True
+
     except Exception as e:
       self.build_logs[node.name].append(f"ERROR: {e}\n")
       self.build_status[node.name] = "error"

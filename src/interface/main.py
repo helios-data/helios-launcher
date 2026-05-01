@@ -206,7 +206,6 @@ class UserInterface:
         imgui.text(f"Status: {status}")
         for line in logs:
             imgui.text(line)
-        node.image_exists = True
     else:
       for child in node.children:
         self._build_docker_image(child)
