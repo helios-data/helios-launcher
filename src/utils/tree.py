@@ -50,21 +50,19 @@ class TreeUtils:
         if node.name == HELIOS_CORE_CONTAINER: return None
 
         leaf = component.Component()
-        leaf.path = node.location or ""
-        leaf.tag = node.hash or "latest"
-        leaf.id = node.id
 
-        leaf.location = node.location or ""
-        leaf.hash = node.hash or ""
-        leaf.type = node.type.name  # or .value if you want the int as a string
-        leaf.skip_spawn = node.skip_spawn
+        # Build the nested DockerSpec
+        docker_spec = component.DockerSpec()
+        docker_spec.image = node.name or ""
+        docker_spec.tag = node.hash or "latest"
+        docker_spec.container_name = node.name    
 
         for vol in node.volumes:  # list of dicts — iterate directly
             v = component.Volume()
             v.source = vol.get("source", "")
             v.target = vol.get("name", "") # TODO: change to "target" once we update the frontend
             v.mode = vol.get("mode", "")
-            leaf.volumes.append(v)
+            docker_spec.volumes.append(v)
 
         for port in node.ports.keys():  # dict — use .values()
             p = component.Port()
@@ -74,8 +72,9 @@ class TreeUtils:
             # p.source = port.get("source", "")
             # p.target = port.get("target", "")
             # p.read_only = port.get("read_only", "")
-            leaf.ports.append(p)
-
+            docker_spec.ports.append(p)
+        
+        leaf.docker_spec = docker_spec
         base.leaf = leaf
       else: # Branch
         branch = component.ComponentGroup()
