@@ -219,10 +219,12 @@ class DockerUtils:
       labels={
         'runtime_hash': self.runtime_hash
       },
-      environment={
-        'RUNTIME_HASH': self.runtime_hash,
-        'COMPONENT_TREE_PATH': '/temp/component_tree.json'
-      }
+      entrypoint="./bin/helios",
+      command=[
+        "-d",
+        "--component-tree", "/temp/component_tree.json", #TODO: DYNAMIC PATH
+        "-rt", self.runtime_hash
+      ]
     )
 
     time.sleep(2) 
