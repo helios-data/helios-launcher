@@ -1,4 +1,4 @@
-.PHONY: proto deps run submodule
+.PHONY: protos deps run submodule kill
 
 # Variables
 PROTO_SOURCE_DIR=helios-protos
@@ -7,10 +7,6 @@ PROTO_BUILD_DIR=src/generated
 # Find all .proto files in the proto directory and subdirectories
 PROTO_SRC := $(shell find $(PROTO_SOURCE_DIR) -name "*.proto")
 BETTER_PROTO_PLUGIN=$(shell find .venv -name protoc-gen-python_betterproto2\*)
-
-# 1=true, 0=false
-DOCKER_DISABLED=1
-export DOCKER_DISABLED
 
 MKDIR = mkdir -p $(1)
 RM = rm -rf
@@ -44,3 +40,11 @@ run:
 
 submodule:
 	git submodule update --remote --merge
+
+kill:
+	@ids=$$(docker ps -q); \
+	if [ -n "$$ids" ]; then \
+		docker kill $$ids; \
+	else \
+		echo "No running containers"; \
+	fi

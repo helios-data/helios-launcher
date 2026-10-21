@@ -12,7 +12,7 @@ import json
 import time
 import sys
 
-REMOVE_BUILD_INTERMEDIATES = True 
+REMOVE_BUILD_INTERMEDIATES = True
 
 DOCKER_VOLUME_CONFIG = {
   '/var/run/docker.sock': {
@@ -53,7 +53,7 @@ class DockerUtils:
       ]
     }
 
-    images = self.client.images.list(name=node.name.lower(), filters=filters)
+    images = self.client.images.list(name=sanitize_image_name(node.name), filters=filters)
 
     if not images and node_hash is None:
       # No internet — fall back to any locally built image regardless of hash
@@ -63,7 +63,7 @@ class DockerUtils:
           f"type={node.type.value}",
         ]
       }
-      images = self.client.images.list(name=node.name.lower(), filters=filters_no_hash)
+      images = self.client.images.list(name=sanitize_image_name(node.name), filters=filters_no_hash)
 
     if not images:
       return False, {"devices": [], "volumes": [], "ports": {}}
@@ -138,7 +138,7 @@ class DockerUtils:
       # Build the docker image
       build_stream = self.client.api.build(
         path=str(path),
-        tag=node.name.lower(),
+        tag=sanitize_image_name(node.name),
         labels={
           "type": str(node.type.value),
           "location": node.location,
