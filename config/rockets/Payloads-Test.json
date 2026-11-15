@@ -105,24 +105,9 @@
         "websites": [],
         "children": [
           {
-            "name": "Logging",
-            "id": "node_5",
-            "location": "https://github.com/helios-data/logging",
-            "branch": "alex/initial-logging",
-            "hash": "",
-            "type": 1,
-            "image_exists": null,
-            "volumes": {},
-            "devices": {},
-            "ports": {},
-            "flags": [],
-            "websites": [],
-            "children": []
-          },
-          {
-            "name": "Dashboard",
+            "name": "MissionControl",
             "id": "7",
-            "location": "https://github.com/helios-data/helios-dashboard",
+            "location": "https://github.com/helios-data/helios-mission-control",
             "branch": "LC2026",
             "hash": "",
             "type": 1,
