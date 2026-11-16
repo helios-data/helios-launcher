@@ -3,6 +3,7 @@ import generated.helios.config as component
 import json
 
 from config.settings import *
+from . import pydantic_config
 
 TREE_FILE_NAME = "component_tree.json"
 
@@ -105,11 +106,27 @@ class TreeUtils:
 
         # Environment variables (map<string, string>). Values support the same
         # $CALLSIGN-style substitution as flags. Empty keys are dropped.
-        docker_spec.env = {
+        env_map = {
             key: self._substitute_flag(value, substitutions)
             for key, value in node.env
             if key
         }
+
+        # Pydantic config: if this repo has a cached config.py with a generated
+        # last_run.json, bind-mount that file into the container and point the
+        # SDK at it via PYDANTIC_CONFIG_PATH. User-set env vars take precedence
+        # if they happen to set the same key.
+        if pydantic_config.has_cached_config(node.name):
+            last_run = pydantic_config.cached_last_run_path(node.name)
+            if last_run.is_file():
+                v = component.Volume()
+                v.source = str(last_run)
+                v.target = CONTAINER_CONFIG_PATH
+                v.mode = "ro"
+                docker_spec.volumes.append(v)
+                env_map.setdefault(PYDANTIC_CONFIG_ENV, CONTAINER_CONFIG_PATH)
+
+        docker_spec.env = env_map
 
         leaf.docker_spec = docker_spec
 

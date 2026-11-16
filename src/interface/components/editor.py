@@ -1,11 +1,42 @@
 from utils import TreeNode
+from utils import pydantic_config
 from imgui_bundle import imgui, portable_file_dialogs as pfd
 from config import *
+from .pydantic_config_editor import ConfigEditor
 
 class EditorComponent:
   def __init__(self, interface=None) -> None:
     #self.current_node = None
     self.interface = interface
+    # One ConfigEditor per repo (keyed by node name), created lazily. Kept
+    # across frames so an open popup survives re-renders.
+    self._config_editors: dict[str, ConfigEditor] = {}
+
+  def _config_editor_for(self, node: TreeNode) -> ConfigEditor:
+    editor = self._config_editors.get(node.name)
+    if editor is None:
+      editor = ConfigEditor(repo_name=node.name,
+                            popup_title=f"Edit Configuration — {node.name}")
+      self._config_editors[node.name] = editor
+    return editor
+
+  def _render_main_config(self, node: TreeNode):
+    """Button + status for the repo's pydantic config. Only called when a
+    cached config.py exists for this node."""
+    editor = self._config_editor_for(node)
+
+    valid = pydantic_config.last_run_is_valid(node.name)
+    if valid:
+      imgui.text_colored((0.4, 0.8, 0.4, 1.0), "Configured")
+    else:
+      node.warning = True
+      imgui.text_colored((1.0, 0.6, 0.2, 1.0), "Needs configuration")
+
+    if imgui.button("Edit Configuration", (-1, 0)):
+      editor.open()
+
+    # The popup is drawn here every frame; it only shows once open() is called.
+    editor.render()
 
   def _structural_change(self, node: TreeNode):
     """A structural edit means the tree no longer matches the loaded config."""
@@ -62,6 +93,16 @@ class EditorComponent:
       if changed_skip_spawn:
         self._structural_change(node)
         node.skip_spawn = new_skip_spawn
+
+      # ONLY RENDER MAIN CONFIG IF THE PYDANTIC CONFIG EXISTS
+      if pydantic_config.has_cached_config(node.name):
+        imgui.spacing()
+        imgui.push_style_color(imgui.Col_.text, (0.4, 0.4, 0.4, 1.0))
+        imgui.text("MAIN CONFIG")
+        imgui.pop_style_color()
+        imgui.separator()
+        imgui.spacing()
+        self._render_main_config(node)
 
       imgui.spacing()
       imgui.push_style_color(imgui.Col_.text, (0.4, 0.4, 0.4, 1.0))
