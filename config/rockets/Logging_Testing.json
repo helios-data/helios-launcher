@@ -108,7 +108,7 @@
             "name": "Logging",
             "id": "node_5",
             "location": "https://github.com/helios-data/logging",
-            "branch": "alex/initial-logging",
+            "branch": "main",
             "hash": "",
             "type": 1,
             "image_exists": null,
