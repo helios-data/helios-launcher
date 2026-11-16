@@ -7,7 +7,7 @@ import re
 import webbrowser
 from imgui_bundle import imgui, immapp, hello_imgui
 from utils import TreeNode, TreeUtils, DockerUtils
-from utils import pydantic_config
+from utils.pydantic.config import last_run_is_valid
 from .components import TreeComponent, EditorComponent, QuickActions
 import serial.tools.list_ports
 
@@ -400,7 +400,7 @@ class UserInterface:
     if node.children == []:
       if node.id == "root":
         return True
-      return pydantic_config.last_run_is_valid(node.name)
+      return last_run_is_valid(node.name)
     return all(self.all_configs_valid(child) for child in node.children)
 
   def generate_node_id(self) -> str:

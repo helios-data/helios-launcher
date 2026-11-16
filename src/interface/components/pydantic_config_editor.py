@@ -21,13 +21,14 @@ from typing import Any, Callable
 from imgui_bundle import imgui
 from pydantic import ValidationError
 
-from utils import pydantic_config as pc
-from utils.pydantic_config import (
+from utils.pydantic.spec import (
     Spec, FieldSpec, MISSING,
     STR, INT, FLOAT, BOOL, ENUM, JSON, MODEL, LIST, DICT, OPTIONAL, INLINE_KINDS,
     build_spec, blank_state, to_data, is_invalid,
+)
+from utils.pydantic.config import (
     initial_state_for_repo, load_last_run, load_config_class,
-    cached_config_py_path, cached_last_run_path, save_last_run,
+    cached_config_py_path, has_cached_config, save_last_run,
 )
 
 RED_TEXT = (1.0, 0.35, 0.35, 1.0)
@@ -76,7 +77,7 @@ class ConfigEditor:
 
     # ----- lifecycle ------------------------------------------------------- #
     def has_config(self) -> bool:
-        return pc.has_cached_config(self.repo_name)
+        return has_cached_config(self.repo_name)
 
     def open(self) -> None:
         """Reload the schema from the cached config.py and open the popup,

@@ -3,7 +3,7 @@ import generated.helios.config as component
 import json
 
 from config.settings import *
-from . import pydantic_config
+from src.utils.pydantic.config import has_cached_config, cached_last_run_path
 
 TREE_FILE_NAME = "component_tree.json"
 
@@ -116,8 +116,8 @@ class TreeUtils:
         # last_run.json, bind-mount that file into the container and point the
         # SDK at it via PYDANTIC_CONFIG_PATH. User-set env vars take precedence
         # if they happen to set the same key.
-        if pydantic_config.has_cached_config(node.name):
-            last_run = pydantic_config.cached_last_run_path(node.name)
+        if has_cached_config(node.name):
+            last_run = cached_last_run_path(node.name)
             if last_run.is_file():
                 v = component.Volume()
                 v.source = str(last_run)

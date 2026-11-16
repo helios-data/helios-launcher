@@ -1,5 +1,5 @@
 from utils import TreeNode
-from utils import pydantic_config
+from utils.pydantic.config import last_run_is_valid, has_cached_config
 from imgui_bundle import imgui, portable_file_dialogs as pfd
 from config import *
 from .pydantic_config_editor import ConfigEditor
@@ -25,7 +25,7 @@ class EditorComponent:
     cached config.py exists for this node."""
     editor = self._config_editor_for(node)
 
-    valid = pydantic_config.last_run_is_valid(node.name)
+    valid = last_run_is_valid(node.name)
     if valid:
       imgui.text_colored((0.4, 0.8, 0.4, 1.0), "Configured")
     else:
@@ -95,7 +95,7 @@ class EditorComponent:
         node.skip_spawn = new_skip_spawn
 
       # ONLY RENDER MAIN CONFIG IF THE PYDANTIC CONFIG EXISTS
-      if pydantic_config.has_cached_config(node.name):
+      if has_cached_config(node.name):
         imgui.spacing()
         imgui.push_style_color(imgui.Col_.text, (0.4, 0.4, 0.4, 1.0))
         imgui.text("MAIN CONFIG")
