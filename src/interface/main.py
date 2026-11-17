@@ -7,6 +7,7 @@ import re
 import webbrowser
 from imgui_bundle import imgui, immapp, hello_imgui
 from utils import TreeNode, TreeUtils, DockerUtils
+from utils.pydantic.config import last_run_is_valid
 from .components import TreeComponent, EditorComponent, QuickActions
 import serial.tools.list_ports
 
@@ -105,7 +106,8 @@ class UserInterface:
 
     # Set launch disabled if the images are not all built
     imgui.set_cursor_pos_y(imgui.get_window_height() - 60)
-    launch_disabled = not self.no_container_warnings(self.data)
+    launch_disabled = (not self.no_container_warnings(self.data)
+                       or not self.all_configs_valid(self.data))
     if launch_disabled:
       imgui.begin_disabled(True)
     launch = imgui.button("Launch Helios", (avail_x, 40))
@@ -390,7 +392,17 @@ class UserInterface:
       for child in node.children:
         built = self.no_container_warnings(child) and built
       return built
-    
+
+  def all_configs_valid(self, node: TreeNode) -> bool:
+    """True only if every leaf whose repo has a cached config.py also has a
+    last_run.json that validates against it. Leaves with no config.py are
+    automatically valid (nothing to configure)."""
+    if node.children == []:
+      if node.id == "root":
+        return True
+      return last_run_is_valid(node.name)
+    return all(self.all_configs_valid(child) for child in node.children)
+
   def generate_node_id(self) -> str:
     """ Generates a unique node ID """
     node_id = f"node_{self.next_node_id}"

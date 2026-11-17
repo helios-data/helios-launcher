@@ -2,6 +2,7 @@
 generated/
 __pycache__/
 tmp/
+cache/
 
 .DS_Store
 .python-version

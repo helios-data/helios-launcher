@@ -25,6 +25,20 @@ TEMP_FOLDER = "tmp"
 SETTINGS_FOLDER = "tmp/settings"
 ROCKET_CONFIG_FOLDER = "config/rockets"
 
+# Per-repo pydantic config files and the last generated last_run.json live
+# here, keyed by repo name. Unlike tmp/, this survives tmp cleanup so we always
+# have the config that matches each built image.
+CONFIG_CACHE_FOLDER = "cache"
+# Where the pydantic config lives inside a cloned repo, relative to its root.
+REPO_CONFIG_RELPATH = "src/helios_pydantic_config.py"
+# File names inside cache/<repo_name>/
+CONFIG_PY_NAME = "helios_pydantic_config.py"
+LAST_RUN_NAME = "last_run.json"
+# Where last_run.json is bind-mounted inside each component's container. The
+# component's SDK reads PYDANTIC_CONFIG_PATH to find it.
+CONTAINER_CONFIG_PATH = "/app/last_run.json"
+PYDANTIC_CONFIG_ENV = "PYDANTIC_CONFIG_PATH"
+
 class Node_Type(Enum):
   NONE = 0
   GITHUB = 1

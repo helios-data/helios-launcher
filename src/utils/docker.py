@@ -1,6 +1,7 @@
 import docker
 from docker.errors import DockerException
 from docker.models.containers import Container
+from src.utils.pydantic.config import sync_cached_config_from_repo
 import threading
 from .github import GithubUtils
 from .tree import TreeNode
@@ -112,6 +113,16 @@ class DockerUtils:
       else:
         path = Path(node.location)
         hash = None
+
+      # Cache the repo's config.py (if any) outside tmp/ so it survives tmp
+      # cleanup. If the repo no longer has one, the cached copy (and its
+      # last_run.json) is removed. tmp/ can be cleaned later; cache/ is kept.
+      try:
+        has_config = sync_cached_config_from_repo(node.name, path)
+        if has_config:
+          self.build_logs[node.name].append("Found config.py; cached for configuration.\n")
+      except Exception as e:
+        self.build_logs[node.name].append(f"WARNING: could not cache config.py: {e}\n")
 
       self.build_logs[node.name].append(f"Building docker image for {node.name}...\n")
 
