@@ -1,20 +1,3 @@
-# --------------------------------------------------------------------------- #
-# Part 4: recursive conflict resolution (merge last_run.json into the new schema)
-#
-# Rules, applied against the *new* schema built from the current config.py:
-#   1. Field in last_run but not in config.py  -> dropped (handled by only
-#      walking the schema's fields).
-#   2. Field in config.py but not in last_run  -> use the schema default.
-#   3. Field in both but now a different primitive type -> use the schema
-#      default (old value discarded).
-#   4. Field in both and it is a complex type  -> recurse, keeping as much of
-#      the old value as still fits the new shape.
-# --------------------------------------------------------------------------- #
-# Sentinel returned by a primitive/enum merge when the old value is discarded
-# (rule 3). The owning MODEL field turns this into the field's default, so that
-# "use the default from config.py" honors per-field defaults, which live on the
-# FieldSpec, not on the Spec.
-
 import json
 from typing import Any
 from src.utils.pydantic.spec import (
@@ -27,14 +10,6 @@ _DISCARD = object()
 
 
 def merge_value(spec: Spec, old: Any, has_old: bool) -> Any:
-    """Return editor state for ``spec``, reusing ``old`` (a plain JSON value from
-    last_run.json) wherever it still fits the new schema, else falling back to
-    the schema's blank/default state. For a MODEL field whose old value is
-    discarded, the owning MODEL substitutes that field's default (see
-    ``_merge_field``).
-    ``has_old`` distinguishes "no value was present" from "the value was JSON
-    null"; when False we always start from the schema's own blank state.
-    """
     result = _merge(spec, old, has_old)
     return blank_state(spec) if result is _DISCARD else result
 

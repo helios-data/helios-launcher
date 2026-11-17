@@ -1,14 +1,3 @@
-# Per-repo pydantic configuration: loading a repo's ``config.py``, building an
-# editor schema from it, merging a previous ``last_run.json`` against a changed
-# schema, and validating the result.
-# This module is UI-free. The ImGui editor (``interface/components/config_editor.py``)
-# and the launcher wiring (``docker.py`` / ``interface/main.py``) both build on it.
-# Cache layout (survives ``tmp/`` cleanup)::
-#     cache/<repo_name>/config.py       # copy of the repo's config.py
-#     cache/<repo_name>/last_run.json   # last saved, schema-valid config
-# NOTE: a repo's ``config.py`` is *executed* to load it. Only point this at repos
-# you already trust enough to build and run.
-
 from __future__ import annotations
 
 import importlib.util
